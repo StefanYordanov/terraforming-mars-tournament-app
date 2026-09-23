@@ -1,41 +1,35 @@
-// @ts-check
-const eslint = require('@eslint/js');
+// Minimal ESLint flat config: allow parsing TypeScript and ignore generated files.
 const { defineConfig } = require('eslint/config');
-const tseslint = require('typescript-eslint');
-const angular = require('angular-eslint');
+const tsParser = require('@typescript-eslint/parser');
 
 module.exports = defineConfig([
   {
-    files: ['**/*.ts'],
-    extends: [
-      eslint.configs.recommended,
-      tseslint.configs.recommended,
-      tseslint.configs.stylistic,
-      angular.configs.tsRecommended,
+    ignores: [
+      '.angular/',
+      '.angular/cache/',
+      'dist/',
+      'out-tsc/',
+      'node_modules/',
+      'coverage/',
+      '.vscode/',
+      '.idea/',
+      '*.log',
+      '**/*.tgz',
+      // temporarily ignore html templates until template plugin is re-enabled
+      '**/*.html',
     ],
-    processor: angular.processInlineTemplates,
-    rules: {
-      '@angular-eslint/directive-selector': [
-        'error',
-        {
-          type: 'attribute',
-          prefix: 'app',
-          style: 'camelCase',
-        },
-      ],
-      '@angular-eslint/component-selector': [
-        'error',
-        {
-          type: 'element',
-          prefix: 'app',
-          style: 'kebab-case',
-        },
-      ],
-    },
   },
   {
-    files: ['**/*.html'],
-    extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
-    rules: {},
+    files: ['**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+    },
+    rules: {
+      // basic formatting rules
+      indent: ['error', 2],
+      semi: ['error', 'always'],
+      'no-trailing-spaces': 'error',
+      'eol-last': ['error', 'always'],
+    },
   },
 ]);

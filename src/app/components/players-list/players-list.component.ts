@@ -25,8 +25,8 @@ export class PlayersListComponent {
   });
   private store = inject(AppStore);
   public $players = computed(() => {
-      const players = this.store.$state()?.players || {};
-      return Object.keys(players).map(key => ({...players[Number(key)]}));
+    const players = this.store.$state()?.players || {};
+    return Object.keys(players).map(key => ({...players[Number(key)]}));
   });
 
   onSubmitNewPlayer($event: SubmitEvent) {

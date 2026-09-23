@@ -1,61 +1,42 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormArray, FormGroup, FormControl, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
-import { startWith } from 'rxjs';
+import { FormBuilder, FormArray, FormControl, ReactiveFormsModule, FormsModule, Validators, AbstractControl } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { Player } from '../../models/player.model';
 import { MatListModule } from '@angular/material/list';
-import { PlayerReservation } from '../../models/tournament.model';
+
 
 @Component({
   selector: 'app-tournament-players-list-dumb',
-  imports: [MatListModule, SelectModule, ReactiveFormsModule],
+  imports: [MatListModule, SelectModule, ReactiveFormsModule, FormsModule],
   templateUrl: './tournament-players-list-dumb.component.html',
   styleUrl: './tournament-players-list-dumb.component.scss',
 })
 export class TorunamentPlayersListDumbComponent {
   playerIds = input.required<number[]>();
-  playerReservations = input.required<PlayerReservation[]>();
   players = input.required<Record<number, Player>>();
 
   private fb = inject(FormBuilder);
 
-  playerReservationsForm: FormArray<FormGroup<{
-    playerId: FormControl<string>;
-    isCheckedIn: FormControl<boolean>;
-  }>> = this.fb.array([], {
+  // FormArray of FormControl<number | null> where each control is a selected player id
+  playerIdsForm: FormArray<FormControl<number | null>> = this.fb.array([], {
     validators: [this.uniquePlayerIdsValidator.bind(this)],
-  }) as unknown as FormArray<FormGroup<{
-    playerId: FormControl<string>;
-    isCheckedIn: FormControl<boolean>;
-  }>>;
-
-  private playerReservationsFormSignal = toSignal(
-      this.playerReservationsForm.valueChanges.pipe(
-        startWith(this.playerReservationsForm.value as PlayerReservation[])
-      ),
-      { initialValue: this.playerReservationsForm.value as PlayerReservation[] }
-    );
-  playerReservationsFormValue = computed(() => this.playerReservationsFormSignal() as PlayerReservation[]);
+  }) as unknown as FormArray<FormControl<number | null>>;
 
   constructor() {
     effect(() => {
-      this.setPlayerReservations(this.playerReservations());
+      this.setPlayerIds(this.playerIds());
     });
   }
 
-  private setPlayerReservations(reservations: PlayerReservation[]) {
-    this.playerReservationsForm.clear();
-    for (const reservation of reservations || []) {
-      this.playerReservationsForm.push(this.createReservationGroup(reservation));
+  private setPlayerIds(ids: number[]) {
+    this.playerIdsForm.clear();
+    for (const id of ids || []) {
+      this.playerIdsForm.push(this.createPlayerControl(id));
     }
   }
 
-  private createReservationGroup(reservation: PlayerReservation): FormGroup {
-    return this.fb.group({
-      playerId: [reservation.playerId, Validators.required],
-      isCheckedIn: [reservation.isCheckedIn],
-    });
+  private createPlayerControl(id?: number): FormControl<number | null> {
+    return this.fb.control<number | null>(id ?? null, Validators.required);
   }
 
   private uniquePlayerIdsValidator(control: AbstractControl) {
@@ -63,10 +44,28 @@ export class TorunamentPlayersListDumbComponent {
       return null;
     }
 
-    const ids = control.controls
-      .map(group => group.get('playerId')?.value)
-      .filter((id): id is string => id !== undefined && id !== null);
-    const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+    const values = control.controls
+      .map(c => c instanceof FormControl ? c.value : (c.get?.('playerId')?.value))
+      .filter((v): v is number => v !== undefined && v !== null);
+
+    const duplicates = values.filter((v, i) => values.indexOf(v) !== i);
     return duplicates.length ? { duplicatePlayerIds: true } : null;
+  }
+
+  // Helpers for template
+  playerOptions = computed(() => {
+    return Object.values(this.players() || {}).map(p => ({ label: `${p.name}`, secretLabel: `${p.name}(${p.phoneNumber})`, value: p.id }));
+  });
+
+  get controls() {
+    return this.playerIdsForm.controls as FormControl<number | null>[];
+  }
+
+  addPlayer() {
+    this.playerIdsForm.push(this.createPlayerControl());
+  }
+
+  removePlayer(index: number) {
+    this.playerIdsForm.removeAt(index);
   }
 }

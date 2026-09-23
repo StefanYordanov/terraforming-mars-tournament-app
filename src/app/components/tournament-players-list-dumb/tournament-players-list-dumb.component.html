@@ -1,2 +1,23 @@
- <div>
+ <div class="tournament-players-list">
+	@if (playerIdsForm.errors) {
+	<div class="error">Duplicate players are not allowed.</div>
+}
+
+	@for (control of controls; track $index) {
+	<div class="player-row">
+		<p-select
+			[options]="playerOptions()"
+            [filter]="true"
+            filterBy="secretLabel"
+			optionLabel="label"
+			optionValue="value"
+			[formControl]="control"
+			placeholder="Select player"
+			></p-select>
+
+		<button type="button" (click)="removePlayer($index)">Remove</button>
+	</div>
+}
+
+	<button type="button" (click)="addPlayer()">Add player</button>
  </div>

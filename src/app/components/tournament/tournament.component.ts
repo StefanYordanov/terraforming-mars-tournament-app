@@ -16,10 +16,10 @@ export class TournamentComponent {
   private route = inject(ActivatedRoute);
   public store = inject(AppStore);
   $tournamentGroupId = toSignal(this.route.params.pipe(
-    map(params => Number(params['tournamentGroupId']))))
+    map(params => Number(params['tournamentGroupId']))));
   $tournamentId = toSignal(this.route.params.pipe(
-    map(params => Number(params['tournamentId']))))
-  
+    map(params => Number(params['tournamentId']))));
+
   $breadcrumbItems = computed(() => {
     const group = this.$tournamentGroup();
     const tournament = this.$tournament();
@@ -31,7 +31,7 @@ export class TournamentComponent {
       { label: group.title, routerLink: [`/tournament-groups/${group.id}`] },
       { label: tournament.title, routerLink: [`/tournament-groups/${group.id}/tournaments/${tournament.id}`] }
     ];
-  })
+  });
 
 
   $tournament = computed(() => {

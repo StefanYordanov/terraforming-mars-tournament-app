@@ -17,7 +17,7 @@ export class TournamentGroupComponent {
   private route = inject(ActivatedRoute);
   public store = inject(AppStore);
   $tournamentGroupId = toSignal(this.route.params.pipe(
-    map(params => Number(params['tournamentGroupId']))))
+    map(params => Number(params['tournamentGroupId']))));
 
   $tournamentGroup = computed(() => {
     const groupId = this.$tournamentGroupId();
@@ -36,5 +36,5 @@ export class TournamentGroupComponent {
       { icon: 'pi pi-home', label: 'Home', routerLink: ['/home'] },
       { label: group.title, routerLink: [`/tournament-groups/${group.id}`] }
     ];
-  })
+  });
 }
