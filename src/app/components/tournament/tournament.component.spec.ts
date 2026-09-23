@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { TournamentComponent } from './tournament.component';
+
+describe('Tournament', () => {
+  let component: TournamentComponent;
+  let fixture: ComponentFixture<TournamentComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TournamentComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TournamentComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

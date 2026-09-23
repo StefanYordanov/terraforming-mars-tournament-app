@@ -1,0 +1,32 @@
+
+    <form (submit)="onSubmitNewTournament($event)">
+          <div class="new-entry-form">
+              <p-floatlabel variant="on">
+                <input pInputText id="over_label" [formField]="newTournamentForm.title" autocomplete="off" />
+                <label for="over_label">Title</label>
+              </p-floatlabel>
+              <div>
+                <button pButton type="submit">Create Tournament</button>
+              </div>
+            
+           <div>
+            @if (newTournamentForm.title().touched() && newTournamentForm.title().invalid()) {
+                @for (error of newTournamentForm.title().errors(); track error) {
+                  <small class="error">{{ error.message }}</small>
+                }
+            }
+            </div>
+          </div>
+          
+        </form>
+        <p-divider></p-divider>
+        <mat-list>
+      @for(tournament of $tournaments(); track tournament.id) {
+        <mat-list-item>
+        <a matListItemTitle [routerLink]="['./tournaments', tournament.id]">{{ tournament.title }}</a>
+
+      </mat-list-item>
+      }
+    </mat-list>
+    
+

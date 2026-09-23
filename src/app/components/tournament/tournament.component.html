@@ -1,0 +1,8 @@
+<p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb>
+<div class="container">
+        <div class="column tournament-details">
+            @if($tournamentId() && store.$state()?.players) {
+            <app-tournament-players-list-dumb [players]="store.$state()!.players!" [playerIds]="$tournament()!.playersIds" [playerReservations]="$tournament()!.playerReservations"></app-tournament-players-list-dumb>
+            }
+        </div>
+</div>

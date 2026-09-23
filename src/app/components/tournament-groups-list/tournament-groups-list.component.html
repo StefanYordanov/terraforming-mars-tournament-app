@@ -1,0 +1,34 @@
+  <!-- <mat-card-title>Tournament groups</mat-card-title>
+  {{ stringify($groups()) }}
+  <mat-card-content> -->
+    <form (submit)="onSubmitNewTournamentGroup($event)">
+          <div class="new-entry-form">
+              <p-floatlabel variant="on">
+                <input pInputText id="over_label" [formField]="newTournamentGroupForm.title" autocomplete="off" />
+                <label for="over_label">Title</label>
+              </p-floatlabel>
+              <div>
+                <button pButton type="submit">Create Group</button>
+              </div>
+            
+           <div>
+            @if (newTournamentGroupForm.title().touched() && newTournamentGroupForm.title().invalid()) {
+                @for (error of newTournamentGroupForm.title().errors(); track error) {
+                  <small class="error">{{ error.message }}</small>
+                }
+            }
+            </div>
+          </div>
+          
+        </form>
+        <p-divider></p-divider>
+        <mat-list>
+      @for(group of $groups(); track group.id) {
+        <mat-list-item>
+        <a matListItemTitle [routerLink]="['/tournament-groups', group.id]">{{ group.title }}</a>
+
+      </mat-list-item>
+      }
+    </mat-list>
+    
+

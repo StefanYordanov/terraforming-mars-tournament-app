@@ -1,0 +1,21 @@
+ 
+
+ <div class="container">
+    <div> <p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb></div>
+    <div class="columns">
+      <div class="column tournament-groups">
+        <h3>Tournaments</h3>
+        @if($tournamentGroupId()){
+          <app-tournaments-list [tournamentGroupId]="$tournamentGroupId()!"></app-tournaments-list>
+        }
+        
+
+      </div>
+      <div class="column players">
+        <h3>Player Rankings</h3>
+        @if($tournamentGroupId()){
+        <app-player-group-ranking-list [tournamentGroupId]="$tournamentGroupId()!"></app-player-group-ranking-list>
+        }
+      </div>
+    </div>
+  </div>

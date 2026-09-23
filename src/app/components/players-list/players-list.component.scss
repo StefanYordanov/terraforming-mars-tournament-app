@@ -1,0 +1,9 @@
+.new-entry-form {
+    display: inline-grid;
+    grid-template-columns: auto auto auto;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.error {
+    color: var(--p-button-text-danger-color)
+}

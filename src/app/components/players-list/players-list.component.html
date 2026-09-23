@@ -1,0 +1,37 @@
+<form (submit)="onSubmitNewPlayer($event)">
+          <div class="new-entry-form">
+              <p-floatlabel variant="on">
+                <input pInputText id="over_label" [formField]="newPlayerForm.name" autocomplete="off" />
+                <label for="over_label">Name</label>
+              </p-floatlabel>
+              <p-floatlabel variant="on">
+                <input pInputText id="phone_label" [formField]="newPlayerForm.phoneNumber" autocomplete="off" />
+                <label for="phone_label">Phone Number</label>
+              </p-floatlabel>
+            <button pButton type="submit">Create Player</button>
+            <div>
+            @if (newPlayerForm.name().touched() && newPlayerForm.name().invalid()) {
+                @for (error of newPlayerForm.name().errors(); track error) {
+                  <small class="error">{{ error.message }}</small>
+                }
+            }
+            </div>
+            <div>
+            @if (newPlayerForm.phoneNumber().touched() && newPlayerForm.phoneNumber().invalid()) {
+                @for (error of newPlayerForm.phoneNumber().errors(); track error) {
+                  <small class="error">{{ error.message }}</small>
+                }
+            }
+            </div>
+            </div>
+        </form>
+        <p-divider></p-divider>
+          
+<mat-list>
+@for(player of $players(); track player.id) {
+  <mat-list-item>
+    <span>{{player.id}}</span>. <span>{{ player.name }} ({{ player.phoneNumber}})</span>
+    
+  </mat-list-item>
+}
+</mat-list>
