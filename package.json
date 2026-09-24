@@ -8,8 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "lint:fix": "eslint . --ext .ts,.html --fix"
+    "lint:fix": "eslint . --ext .ts,.html --fix",
+    "format": "prettier --write \"src/**/*.{ts,html,scss,json,md}\""
   },
+  "prettier": "prettier --write",
   "private": true,
   "packageManager": "npm@11.9.0",
   "dependencies": {

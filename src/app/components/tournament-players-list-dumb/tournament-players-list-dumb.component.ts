@@ -3,11 +3,14 @@ import { FormBuilder, FormArray, FormControl, ReactiveFormsModule, FormsModule, 
 import { SelectModule } from 'primeng/select';
 import { Player } from '../../models/player.model';
 import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 
 @Component({
   selector: 'app-tournament-players-list-dumb',
-  imports: [MatListModule, SelectModule, ReactiveFormsModule, FormsModule],
+  imports: [MatListModule, SelectModule, ReactiveFormsModule, FormsModule, MatIconModule,
+    MatButtonModule],
   templateUrl: './tournament-players-list-dumb.component.html',
   styleUrl: './tournament-players-list-dumb.component.scss',
 })

@@ -10,14 +10,18 @@
             [filter]="true"
             filterBy="secretLabel"
 			optionLabel="label"
+			selectedItemTemplate="selectedItemTemplate"
 			optionValue="value"
 			[formControl]="control"
 			placeholder="Select player"
-			></p-select>
+			>
+			<ng-template let-player #item>
+                        <span>{{ player.secretLabel }}</span>
+                </ng-template></p-select>
 
-		<button type="button" (click)="removePlayer($index)">Remove</button>
+		<button type="button" matMiniFab class="p-button-danger" (click)="removePlayer($index)"><mat-icon>delete</mat-icon></button>
 	</div>
 }
 
-	<button type="button" (click)="addPlayer()">Add player</button>
+	<button type="button" class="p-button" (click)="addPlayer()">Add player</button>
  </div>
