@@ -54,5 +54,7 @@ export class TournamentComponent {
     return group || null;
   });
 
-
+  playersChanged($event: { playerIds: number[]; }) {
+    this.store.setTournamentPlayers(this.$tournamentGroupId(), this.$tournamentId(), $event.playerIds);
+  }
 }

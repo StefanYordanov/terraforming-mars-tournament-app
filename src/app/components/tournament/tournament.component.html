@@ -2,7 +2,11 @@
 <div class="container">
         <div class="column tournament-details">
             @if($tournamentId() && store.$state()?.players) {
-            <app-tournament-players-list-dumb [players]="store.$state()!.players!" [playerIds]="$tournament()!.playersIds"></app-tournament-players-list-dumb>
+            <app-tournament-players-list-dumb 
+            [players]="store.$state()!.players!" 
+            [playerIds]="$tournament()!.playersIds" 
+            (valuesChanged)="playersChanged($event)">
+            </app-tournament-players-list-dumb>
             }
         </div>
 </div>
