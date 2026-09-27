@@ -72,7 +72,7 @@ export class AppStore {
     }
     const groupTournaments = [...(groups[groupIdx].tournaments)];
     const newTournamentId = Math.max(...groupTournaments.map(t => t.id), 0) + 1 ;
-    const newTournament : Tournament = { id: newTournamentId, title: tournamentTitle, playerReservations: [], playersIds: [], settings: { qualifierRoundsCount: 2, preferedPlayerCountPerTable: 4, numberOfTables: 8, roundBoards: [BoardEnum.Tharsis, BoardEnum.Elysium, BoardEnum.Hellas]}, qualifierRounds: [], finalRound: null };
+    const newTournament : Tournament = { id: newTournamentId, title: tournamentTitle, playerReservations: [], playersIds: [], settings: { qualifierRoundsCount: 2, preferedPlayerCountPerTablePriority: [4, 3, 5, 2], numberOfTables: 8, roundBoards: [BoardEnum.Tharsis, BoardEnum.Elysium, BoardEnum.Hellas]}, qualifierRounds: [], finalRound: null };
     groupTournaments.push(newTournament);
     groups[groupIdx] = { ...groups[groupIdx], tournaments: groupTournaments };
     console.log(groups);
@@ -111,6 +111,33 @@ export class AppStore {
     });
   }
 
+  setTournament(tournamentGroupId: number, tournamentId: number, tournament: Tournament) {
+    if(tournamentGroupId === undefined || tournamentId === undefined) {
+      console.warn("Tournament group id or tournament id is undefined");
+      return;
+    }
+
+    const groups = [...(this.$state()?.tournamentGroups) || []];
+    const groupIdx = groups.findIndex(g => g.id === tournamentGroupId);
+    if(groupIdx === -1) {
+      console.warn(`Group with id ${tournamentGroupId} not found`);
+      return;
+    }
+    const groupTournaments = [...(groups[groupIdx].tournaments)];
+    const tournamentIdx = groupTournaments.findIndex(t => t.id === tournamentId);
+    if(tournamentIdx === -1) {
+      console.warn(`Tournament with id ${tournamentId} not found`);
+      return;
+    }
+    groupTournaments[tournamentIdx] = { ...tournament };
+    groups[groupIdx] = { ...groups[groupIdx], tournaments: groupTournaments };
+    patchState(this.$globalState, {
+      state: {
+        ...this.$state()!,
+        tournamentGroups: groups
+      }
+    });
+  }
 
   constructor() {
     effect(() => {

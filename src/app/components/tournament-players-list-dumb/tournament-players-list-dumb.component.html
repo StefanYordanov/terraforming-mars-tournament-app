@@ -1,27 +1,28 @@
  <div class="tournament-players-list">
+	<h3>Players({{ playerIds().length }})</h3>
 	@if (playerIdsForm.errors) {
 	<div class="error">Duplicate players are not allowed.</div>
-}
+	}
+	
+	<div class="player-selects">
+		@for (control of controls; track $index) {
+			<p-select
+				[options]="playerOptions()"
+    	        [filter]="true"
+    	        filterBy="secretLabel"
+				optionLabel="label"
+				selectedItemTemplate="selectedItemTemplate"
+				optionValue="value"
+				[formControl]="control"
+				placeholder="Select player"
+				>
+				<ng-template let-player #item>
+    	            <span>{{ player.secretLabel }}</span>
+    	        </ng-template></p-select>
 
-	@for (control of controls; track $index) {
-	<div class="player-row">
-		<p-select
-			[options]="playerOptions()"
-            [filter]="true"
-            filterBy="secretLabel"
-			optionLabel="label"
-			selectedItemTemplate="selectedItemTemplate"
-			optionValue="value"
-			[formControl]="control"
-			placeholder="Select player"
-			>
-			<ng-template let-player #item>
-                        <span>{{ player.secretLabel }}</span>
-                </ng-template></p-select>
-
-		<button type="button" matMiniFab class="p-button-danger" (click)="removePlayer($index)"><mat-icon>delete</mat-icon></button>
+			<button type="button" matMiniFab class="p-button-danger" (click)="removePlayer($index)"><mat-icon>delete</mat-icon></button>
+		}
 	</div>
-}
 
 	<button type="button" mat-raised-button (click)="addPlayer()">Add player</button>
  </div>

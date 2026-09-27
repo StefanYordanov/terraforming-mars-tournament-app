@@ -50,9 +50,11 @@ body {
     height: 100%;
 }
 .column {
-    flex: 1;
     padding: 5px;
     background-color: rgba(white, 0.4);
+}
+.flex-1{
+  flex: 1;
 }
 
 p-breadcrumb * {

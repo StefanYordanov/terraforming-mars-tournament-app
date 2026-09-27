@@ -2,95 +2,118 @@ import { Injectable } from "@angular/core";
 import { Tournament } from "../models/tournament.model";
 import { TournamentRound } from "../models/tournament-round.model";
 import { TournamentSettings } from "../models/tournament-settings.model";
+import { shuffleArray } from "../utils/array-utils";
+import { GameSession } from "../models/game-session.model";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentRoundsGeneratorService {
-  public generateGameSessions(tournament: Tournament): TournamentRound[] {
-    const config = tournament.settings;
-    // placeholder - real round generation not in scope for this task
-    return [];
+  public generateGameSessions(tournament: Tournament): TournamentRound[] | null {
+    const tableDistributions = this.generateTableAllocations(tournament.playersIds.length, tournament.settings);
+    if(!tableDistributions) {
+      return null;
+    }
+
+    const tablesTemplate: number[][] = [];
+    for(let i = 0; i < tableDistributions.length; i++) {
+      const amountOfTimesToAdd = tableDistributions[i];
+      const numberOfPlayersToAdd = tournament.settings.preferedPlayerCountPerTablePriority[i];
+      for(let j = 0; j < amountOfTimesToAdd; j++) {
+        tablesTemplate.push(Array(numberOfPlayersToAdd).fill(0));
+      }
+    }
+
+    const tournamentRounds: TournamentRound[] = [];
+    for(let i = 0; i < tournament.settings.qualifierRoundsCount; i++) {
+      const playerIds = shuffleArray(tournament.playersIds);
+      const gameSessionsTemplate : number[][] =
+        this.splayPlayersAcrossTableTemplate(playerIds, tablesTemplate);
+      const gameSessions: GameSession[] = gameSessionsTemplate.map((playerIds, index) => {
+        const gameSession : GameSession = {
+          board: tournament.settings.roundBoards[i],
+          generationsPlayed: 0,
+          tableNumber: index + 1,
+          completed: false,
+          playerScores: playerIds.map(playerId => ({
+            playerId: playerId,
+            pointScore: 0,
+            megaCreditScore: 0,
+            corporationCard: '',
+            preludeCards: []
+          }))
+        };
+        return gameSession;
+      });
+
+      tournamentRounds.push({
+        id: i + 1,
+        title: `Round ${i + 1}`,
+        gameSessions: gameSessions
+      });
+    }
+    return tournamentRounds;
   }
 
-  /**
-   * Generate table allocations (players per table) given total players and tournament settings.
-   * - Won't produce more than settings.numberOfTables tables
-   * - Tries to maximize usage of earlier entries in preferedPlayerCountPerTablePriority
-   *   (the earlier a value appears, the more preferred it is)
-   * Returns an array of table sizes or an empty array when impossible.
-   */
-  public generateTableAllocations(totalPlayers: number, settings: TournamentSettings): number[] {
+  public generateTableAllocations(totalPlayers: number, settings: TournamentSettings): number[] | null {
     const prefs = settings.preferedPlayerCountPerTablePriority.slice();
     const maxTables = settings.numberOfTables;
-
-    // basic sanity
-    if (totalPlayers <= 0 || prefs.length === 0 || maxTables <= 0) return [];
-
-    // recursive search over counts per preference index.
-    let best: number[] | null = null;
-
-    function compareCounts(a: number[], b: number[]) {
-      // lexicographic compare favoring larger counts of earlier (better) prefs
-      for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return a[i] - b[i];
-      }
-      return 0;
-    }
-
-    const n = prefs.length;
-
-    function dfs(index: number, remainingPlayers: number, remainingTables: number, counts: number[]) {
-      if (remainingPlayers < 0 || remainingTables < 0) return;
-      if (index === n) {
-        if (remainingPlayers === 0) {
-          const candidateCounts = counts.slice();
-          // build flat table sizes array from counts
-          const tables: number[] = [];
-          for (let i = 0; i < n; i++) {
-            for (let k = 0; k < candidateCounts[i]; k++) tables.push(prefs[i]);
-          }
-          if (tables.length <= maxTables) {
-            // compare lexicographically by counts (we want more of earlier prefs)
-            if (!best) best = tables;
-            else {
-              // build counts from best for compare
-              const bestCounts = new Array(n).fill(0);
-              for (const s of best) {
-                const idx = prefs.indexOf(s);
-                if (idx >= 0) bestCounts[idx]++;
-              }
-              const candCounts = candidateCounts;
-              if (compareCounts(candCounts, bestCounts) > 0) {
-                best = tables;
-              }
-            }
-          }
+    let countsDistributions = new Array(prefs.length).fill(0);
+    while(true) {
+      const remainingPlayers = totalPlayers - this.crossMultiply(prefs, countsDistributions);
+      const remainingPlayersAreDivideable = remainingPlayers % prefs[0] === 0;
+      const topPrioDistribution = remainingPlayers / prefs [0];
+      const allPlayersFitTables = topPrioDistribution + countsDistributions.reduce((partialSum, a) => partialSum + a, 0) <= maxTables;
+      if(remainingPlayersAreDivideable && allPlayersFitTables) {
+        countsDistributions[0] = topPrioDistribution;
+        return countsDistributions;
+      } else {
+        const nextCountsDistributions = this.getNextMostDesireableCountsDistribution(countsDistributions, prefs, totalPlayers);
+        if(nextCountsDistributions === null) {
+          return null;
         }
-        return;
+        countsDistributions = nextCountsDistributions;
       }
-
-      // max possible tables with this pref
-      const pref = prefs[index];
-      const maxCountByPlayers = Math.floor(remainingPlayers / pref);
-      const maxCount = Math.min(remainingTables, maxCountByPlayers);
-      // iterate from max to 0 to prefer more of earlier prefs
-      for (let c = maxCount; c >= 0; c--) {
-        counts[index] = c;
-        dfs(index + 1, remainingPlayers - c * pref, remainingTables - c, counts);
-      }
-      counts[index] = 0;
     }
 
-    dfs(0, totalPlayers, maxTables, new Array(n).fill(0));
+  }
 
-    if (best && best.length > 0) return best;
+  private getNextMostDesireableCountsDistribution(countsDistribution: number[], prefs: number[], totalPlayers: number): number[] | null{
+    const result = countsDistribution.slice();
+    let currentIndex = 1;
+    while(true){
+      result[currentIndex]++;
+      if(this.crossMultiply(result, prefs) > totalPlayers) {
+        for(let i = 1; i<= currentIndex; i++){
+          result[i] = 0;
+        }
+        currentIndex++;
+        if(currentIndex >= countsDistribution.length){
+          return null;
+        }
+      } else {
+        break;
+      }
+    }
+    return result;
 
-    // fallback: if no exact combination found, distribute players across up to maxTables
-    // as evenly as possible (difference at most 1)
-    const tablesCount = Math.min(maxTables, totalPlayers);
-    const base = Math.floor(totalPlayers / tablesCount);
-    const remainder = totalPlayers % tablesCount;
-    const fallback: number[] = [];
-    for (let i = 0; i < tablesCount; i++) fallback.push(base + (i < remainder ? 1 : 0));
-    return fallback;
+  }
+
+  private crossMultiply(arr1: number[], arr2: number[]) {
+    let result = 0;
+    for(let i = 0, len = Math.min(arr1.length, arr2.length); i<len; i++) {
+      result += arr1[i] * arr2[i];
+    }
+    return result;
+  }
+
+  private splayPlayersAcrossTableTemplate(playerIds: number[], tablesTemplate: number[][]): number[][] {
+    const result = structuredClone(tablesTemplate);
+    for(let i=0, j=0, k = 0; i < playerIds.length; i++, k++) {
+      if(isNaN(result[j][k])) {
+        j++;
+        k = 0;
+      }
+      result[j][k] = playerIds[i];
+    }
+    return result;
   }
 }

@@ -5,6 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { AppStore } from '../../+store/app.store';
 import { TorunamentPlayersListDumbComponent } from "../tournament-players-list-dumb/tournament-players-list-dumb.component";
+import { TournamentRoundsGeneratorService } from '../../services/tournament-game-sessions-generator.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-tournament',
@@ -14,7 +16,9 @@ import { TorunamentPlayersListDumbComponent } from "../tournament-players-list-d
 })
 export class TournamentComponent {
   private route = inject(ActivatedRoute);
+  private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
   public store = inject(AppStore);
+  private messageService = inject(MessageService);
   $tournamentGroupId = toSignal(this.route.params.pipe(
     map(params => Number(params['tournamentGroupId']))));
   $tournamentId = toSignal(this.route.params.pipe(
@@ -56,5 +60,25 @@ export class TournamentComponent {
 
   playersChanged($event: { playerIds: number[]; }) {
     this.store.setTournamentPlayers(this.$tournamentGroupId(), this.$tournamentId(), $event.playerIds);
+  }
+
+  generateGameSessions() {
+    const tournament = this.$tournament();
+    const tournamentGroupId = this.$tournamentGroupId();
+    const tournamentId = this.$tournamentId();
+    if(!tournament || !tournamentGroupId || !tournamentId) {
+      return;
+    }
+
+    const qualifierRounds = this.tournamentRoundsGeneratorService.generateGameSessions(tournament);
+    if(qualifierRounds){
+      this.store.setTournament(tournamentGroupId, tournamentId, {
+        ...tournament,
+        qualifierRounds
+      });
+    } else {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Generation of the rounds failed.' });
+    }
+
   }
 }

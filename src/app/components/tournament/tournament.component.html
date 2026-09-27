@@ -1,6 +1,8 @@
 <p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb>
-<div class="container">
-        <div class="column tournament-details">
+<div class="container tournament-container">
+    
+        <div class="column  player-details">
+            <button type="button" (click)="generateGameSessions()">generate</button>
             @if($tournamentId() && store.$state()?.players) {
             <app-tournament-players-list-dumb 
             [players]="store.$state()!.players!" 
@@ -9,4 +11,12 @@
             </app-tournament-players-list-dumb>
             }
         </div>
+        <div class="column flex-1">
+            distributions
+        </div>
+        <div class ="column">
+            ranking
+        </div>
+
+        
 </div>
