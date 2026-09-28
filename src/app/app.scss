@@ -12,8 +12,9 @@
      450px, var(--mat-sys-background) 100%),
     url('../assets/terraforming mars.avif');
     background-repeat: no-repeat;
-    height: calc(100vh - var(--mat-toolbar-standard-height, 64px));
-    //margin-top: -16px;
+    flex: 1;
+    height: 100%;
+    overflow-y: hidden;
 }
 
 .main-content {
@@ -23,6 +24,6 @@
 .content {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 100vh;
     width: 100%;
 }

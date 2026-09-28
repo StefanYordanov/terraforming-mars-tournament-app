@@ -39,10 +39,9 @@ body {
 }
 
 .container {
-    height: 100%;
     gap: 1rem;
     height: 100%;
-    margin: 1rem
+    margin: 0 0.5rem;
 }
 .columns {
     display: flex;
@@ -52,6 +51,8 @@ body {
 .column {
     padding: 5px;
     background-color: rgba(white, 0.4);
+    overflow-y: auto;
+    height: 100%;
 }
 .flex-1{
   flex: 1;
@@ -64,4 +65,8 @@ p-breadcrumb * {
 .error {
   color: red;
   font-size: 0.8rem;
+}
+
+.overflow-hidden {
+  overflow: hidden;
 }

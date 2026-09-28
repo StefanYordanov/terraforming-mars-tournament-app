@@ -9,10 +9,11 @@ import { TournamentRoundsGeneratorService } from '../../services/tournament-game
 import { MessageService } from 'primeng/api';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-tournament',
-  imports: [TorunamentPlayersListDumbComponent, BreadcrumbModule, MatButtonToggleModule,FormsModule ],
+  imports: [TorunamentPlayersListDumbComponent, BreadcrumbModule, MatButtonToggleModule,FormsModule, ButtonModule ],
   templateUrl: './tournament.component.html',
   styleUrl: './tournament.component.scss',
 })
@@ -21,7 +22,7 @@ export class TournamentComponent {
   private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
   public store = inject(AppStore);
   private messageService = inject(MessageService);
-  readonly selectedViews = signal<string[]>(['rounds']);
+  readonly selectedViews = signal<string[]>(['rounds', 'ranking', 'players']);
   isViewSelected(view: string, selectedViews: string[]): boolean {
     return selectedViews.includes(view) || false;
   }

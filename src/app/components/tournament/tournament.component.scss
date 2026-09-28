@@ -1,3 +1,10 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+
 .tournament-header{
     display: flex;
     justify-content: space-between;
@@ -17,10 +24,13 @@
 
 .tournament-container{
     display: flex;
+    flex: 1;
 }
 .player-details{
     max-width: 300px;
+    overflow-x: hidden;
 }
 .ranking {
     max-width: 250px;
+    overflow-x: hidden;
 }

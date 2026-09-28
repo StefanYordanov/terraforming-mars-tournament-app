@@ -8,14 +8,15 @@
     </mat-button-toggle-group>
     </div>
 </div>
-<div class="container tournament-container">
+<div class="container overflow-hidden">
+    <div class="columns tournament-container">
     @if($tournamentId() && store.$state()?.players) {
         @if(isPlayersViewSelected()) {
            <div class="column  player-details">
 
                <div class="players-tab-header">
                    <h3>Players({{ $tournament()!.playersIds.length }})</h3>
-                   <button type="button" (click)="generateGameSessions()">generate</button>
+                   <button pButton type="button" (click)="generateGameSessions()">generate</button>
                </div>
                <app-tournament-players-list-dumb 
                [players]="store.$state()!.players!" 
@@ -34,5 +35,6 @@
             </div>
         }
         
-    }      
+    }
+    </div>      
 </div>
