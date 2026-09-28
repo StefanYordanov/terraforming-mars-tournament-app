@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ActivatedRoute } from '@angular/router';
@@ -7,10 +7,12 @@ import { AppStore } from '../../+store/app.store';
 import { TorunamentPlayersListDumbComponent } from "../tournament-players-list-dumb/tournament-players-list-dumb.component";
 import { TournamentRoundsGeneratorService } from '../../services/tournament-game-sessions-generator.service';
 import { MessageService } from 'primeng/api';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-tournament',
-  imports: [TorunamentPlayersListDumbComponent, BreadcrumbModule ],
+  imports: [TorunamentPlayersListDumbComponent, BreadcrumbModule, MatButtonToggleModule,FormsModule ],
   templateUrl: './tournament.component.html',
   styleUrl: './tournament.component.scss',
 })
@@ -19,6 +21,14 @@ export class TournamentComponent {
   private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
   public store = inject(AppStore);
   private messageService = inject(MessageService);
+  readonly selectedViews = signal<string[]>(['rounds']);
+  isViewSelected(view: string, selectedViews: string[]): boolean {
+    return selectedViews.includes(view) || false;
+  }
+  isRankingViewSelected = computed(() => this.isViewSelected('ranking', this.selectedViews()));
+  isRoundsViewSelected = computed(() => this.isViewSelected('rounds', this.selectedViews()));
+  isPlayersViewSelected = computed(() => this.isViewSelected('players', this.selectedViews()));
+
   $tournamentGroupId = toSignal(this.route.params.pipe(
     map(params => Number(params['tournamentGroupId']))));
   $tournamentId = toSignal(this.route.params.pipe(

@@ -1,22 +1,38 @@
-<p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb>
+<div class="tournament-header">
+    <p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb>
+    <div class="tournament-header-controls">
+    <mat-button-toggle-group [(ngModel)]="selectedViews" aria-label="Font Style" multiple>
+       <mat-button-toggle value="players">Players</mat-button-toggle>
+       <mat-button-toggle checked disabled value="rounds">Rounds</mat-button-toggle>
+       <mat-button-toggle value="ranking">Ranking</mat-button-toggle>
+    </mat-button-toggle-group>
+    </div>
+</div>
 <div class="container tournament-container">
-    
-        <div class="column  player-details">
-            <button type="button" (click)="generateGameSessions()">generate</button>
-            @if($tournamentId() && store.$state()?.players) {
-            <app-tournament-players-list-dumb 
-            [players]="store.$state()!.players!" 
-            [playerIds]="$tournament()!.playersIds" 
-            (valuesChanged)="playersChanged($event)">
-            </app-tournament-players-list-dumb>
-            }
-        </div>
-        <div class="column flex-1">
-            distributions
-        </div>
-        <div class ="column">
-            ranking
-        </div>
+    @if($tournamentId() && store.$state()?.players) {
+        @if(isPlayersViewSelected()) {
+           <div class="column  player-details">
 
+               <div class="players-tab-header">
+                   <h3>Players({{ $tournament()!.playersIds.length }})</h3>
+                   <button type="button" (click)="generateGameSessions()">generate</button>
+               </div>
+               <app-tournament-players-list-dumb 
+               [players]="store.$state()!.players!" 
+               [playerIds]="$tournament()!.playersIds" 
+               (valuesChanged)="playersChanged($event)">
+               </app-tournament-players-list-dumb>
+
+           </div>
+        }
+        <div class="column flex-1">
+            <!-- <app-tournament-game-rounds [tournamentId]="$tournamentId()!"></app-tournament-game-rounds> -->
+        </div>
+        @if(isRankingViewSelected()) {
+            <div class ="column ranking">
+                rankingrankingrankingrankingranking
+            </div>
+        }
         
+    }      
 </div>

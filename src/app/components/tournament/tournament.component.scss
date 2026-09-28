@@ -1,6 +1,26 @@
+.tournament-header{
+    display: flex;
+    justify-content: space-between;
+}
+
+.players-tab-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tournament-header-controls{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .tournament-container{
     display: flex;
 }
 .player-details{
     max-width: 300px;
+}
+.ranking {
+    max-width: 250px;
 }
