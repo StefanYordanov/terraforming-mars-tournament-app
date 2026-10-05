@@ -7,9 +7,9 @@
 
 .player-selects{
     display: grid;
-    grid-template-columns: 1fr 65px;
+    grid-template-columns: 1fr 45px;
     gap: 0.5rem;
-    width: 300px;
+    width: 100%;
 }
 .tournament-players-list{
     max-height: 100%;

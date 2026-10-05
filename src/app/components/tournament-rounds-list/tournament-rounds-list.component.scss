@@ -1,0 +1,80 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.tournament-rounds-list {
+  display: block;
+}
+
+.round-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.round-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.game-sessions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.checkbox-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.session-fields {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.scores-header,
+.final-round-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.player-score-row {
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.prelude-input {
+  min-width: 200px;
+}
+
+.empty-state,
+.empty-final-round {
+  padding: 1rem 0;
+}
+
+p-inputnumber {
+    width: 95px;
+}
+
+mat-card-content.mat-card-content-tight{
+    padding: 5px;
+}
+
+p-inputnumber.small-integer {
+    width: 60px;
+}
+
+td.stretch-child >* {
+    width: 100%;
+}

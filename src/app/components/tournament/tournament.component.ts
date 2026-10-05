@@ -10,10 +10,12 @@ import { MessageService } from 'primeng/api';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { TournamentRoundsListComponent } from '../tournament-rounds-list/tournament-rounds-list.component';
+import { TournamentRound } from '../../models/tournament-round.model';
 
 @Component({
   selector: 'app-tournament',
-  imports: [TorunamentPlayersListDumbComponent, BreadcrumbModule, MatButtonToggleModule,FormsModule, ButtonModule ],
+  imports: [TorunamentPlayersListDumbComponent, TournamentRoundsListComponent, BreadcrumbModule, MatButtonToggleModule, FormsModule, ButtonModule],
   templateUrl: './tournament.component.html',
   styleUrl: './tournament.component.scss',
 })
@@ -71,6 +73,21 @@ export class TournamentComponent {
 
   playersChanged($event: { playerIds: number[]; }) {
     this.store.setTournamentPlayers(this.$tournamentGroupId(), this.$tournamentId(), $event.playerIds);
+  }
+
+  tournamentRoundsChanged($event: { qualifierRounds: TournamentRound[]; finalRound: TournamentRound | null; }) {
+    const tournament = this.$tournament();
+    const tournamentGroupId = this.$tournamentGroupId();
+    const tournamentId = this.$tournamentId();
+    if (!tournament || !tournamentGroupId || !tournamentId) {
+      return;
+    }
+
+    this.store.setTournament(tournamentGroupId, tournamentId, {
+      ...tournament,
+      qualifierRounds: $event.qualifierRounds,
+      finalRound: $event.finalRound,
+    });
   }
 
   generateGameSessions() {

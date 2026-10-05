@@ -27,7 +27,12 @@
            </div>
         }
         <div class="column flex-1">
-            <!-- <app-tournament-game-rounds [tournamentId]="$tournamentId()!"></app-tournament-game-rounds> -->
+            <h3>Rounds</h3>
+            <app-tournament-rounds-list
+              [tournament]="$tournament()!"
+              [players]="store.$state()!.players!"
+              (valuesChanged)="tournamentRoundsChanged($event)">
+            </app-tournament-rounds-list>
         </div>
         @if(isRankingViewSelected()) {
             <div class ="column ranking">
