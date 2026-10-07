@@ -22,6 +22,7 @@ import { TournamentRound } from '../../models/tournament-round.model';
 import { Tournament } from '../../models/tournament.model';
 import { CORPORATIONS } from '../../consts/corporations.const';
 import { PRELUDES } from '../../consts/preludes.const';
+import { TournamentGameSessionComponent } from '../tournament-game-session/tournament-game-session.component';
 
 @Component({
   selector: 'app-tournament-rounds-list',
@@ -41,7 +42,8 @@ import { PRELUDES } from '../../consts/preludes.const';
     InputTextModule,
     InputNumberModule,
     CheckboxModule,
-    IftaLabelModule
+    IftaLabelModule,
+    TournamentGameSessionComponent,
   ],
   templateUrl: './tournament-rounds-list.component.html',
   styleUrl: './tournament-rounds-list.component.scss',
@@ -138,6 +140,7 @@ export class TournamentRoundsListComponent {
         board: BoardEnum.Tharsis,
         generationsPlayed: 0,
         tableNumber: nextTableNumber,
+        dummyPlayersCount: 0,
         completed: false,
         playerScores: [],
       })
@@ -272,6 +275,7 @@ export class TournamentRoundsListComponent {
       generationsPlayed: this.fb.control<number>(gameSession.generationsPlayed ?? 0),
       tableNumber: this.fb.control<number>(gameSession.tableNumber ?? 1),
       completed: this.fb.control<boolean>(gameSession.completed ?? false),
+      dummyPlayersCount: this.fb.control<number>(gameSession.dummyPlayersCount ?? 0),
       playerScores: this.fb.array((gameSession.playerScores ?? []).map((score) => this.createPlayerScoreGroup(score))),
     });
   }
@@ -361,6 +365,7 @@ export class TournamentRoundsListComponent {
         board: (sessionGroup.get('board')?.value ?? BoardEnum.Tharsis) as BoardEnum,
         generationsPlayed: Number(sessionGroup.get('generationsPlayed')?.value ?? 0),
         tableNumber: Number(sessionGroup.get('tableNumber')?.value ?? 1),
+        dummyPlayersCount: Number(sessionGroup.get('dummyPlayersCount')?.value ?? 0),
         completed: Boolean(sessionGroup.get('completed')?.value ?? false),
         playerScores,
       } satisfies GameSession;

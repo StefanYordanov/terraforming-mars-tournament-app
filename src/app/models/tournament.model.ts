@@ -21,20 +21,19 @@ export interface ComputedTournament {
   id: number;
   title: string;
   players: Player[];
-  playerReservations: Player[];
+  playerReservations: PlayerReservation[];
   settings: TournamentSettings;
-  rounds: ComputedTournamentRound[];
+  qualifierRounds: ComputedTournamentRound[];
   finalRound: ComputedTournamentRound | null;
-  unassignedPlayers: Player[];
-  playerRankings: [{
-    player: Player;
-    rank: number;
-    rankPoints: number;
-    tournamentPoints: number[];
-    tournamentPointsTotal: number;
-    dominancePoints: number[];
-    dominancePointsTotal: number;
-    dominancePointsPrecise: number[];
-    dominancePointsPreciseTotal: number;
-  }];
+  playerRankings: ComputedPlayerRanking[] | null;
+}
+
+export interface ComputedPlayerRanking {
+  player: Player;
+  rank: number;
+  rankPoints: number;
+  tournamentPoints: number[];
+  tournamentPointsTotal: number;
+  dominancePoints: number[];
+  dominancePointsTotal: number;
 }

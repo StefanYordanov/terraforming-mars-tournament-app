@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ActivatedRoute } from '@angular/router';
@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TournamentRoundsListComponent } from '../tournament-rounds-list/tournament-rounds-list.component';
 import { TournamentRound } from '../../models/tournament-round.model';
+import { ComputedStateService } from '../../services/computed-state.service';
 
 @Component({
   selector: 'app-tournament',
@@ -24,6 +25,7 @@ export class TournamentComponent {
   private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
   public store = inject(AppStore);
   private messageService = inject(MessageService);
+  private computedStateService = inject(ComputedStateService);
   readonly selectedViews = signal<string[]>(['rounds', 'ranking', 'players']);
   isViewSelected(view: string, selectedViews: string[]): boolean {
     return selectedViews.includes(view) || false;
@@ -36,6 +38,15 @@ export class TournamentComponent {
     map(params => Number(params['tournamentGroupId']))));
   $tournamentId = toSignal(this.route.params.pipe(
     map(params => Number(params['tournamentId']))));
+
+  constructor() {
+    effect(() => {
+      const tournament = this.$tournament();
+      if(tournament) {
+        console.log(this.computedStateService.computeTournament(tournament, this.store.$state()?.players || []));
+      }
+    });
+  }
 
   $breadcrumbItems = computed(() => {
     const group = this.$tournamentGroup();

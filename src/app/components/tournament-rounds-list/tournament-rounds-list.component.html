@@ -26,93 +26,16 @@
           }
           <div class="game-sessions-container">
           @for (gameSessionControl of getGameSessionControls(roundIndex); track $index; let sessionIndex = $index) {
-            <mat-card class="game-session-card" [formGroup]="gameSessionControl">
-
-              <mat-card-content class="mat-card-content-tight">
-                <div class="session-fields">
-                  <div class="field">
-                    <p-iftalabel>
-                      <label>Table</label>
-                      <p-inputNumber class="small-integer" formControlName="tableNumber" [min]="1" />
-                    </p-iftalabel>
-                  </div>
-                  
-                    <div class="field">
-                    <p-iftalabel>
-                        <p-select [options]="boardOptions" formControlName="board" />
-                         <label>Board</label>
-                    </p-iftalabel>
-                   
-                    
-                  </div>
-
-                  
-                  <div class="field">
-                    <p-iftalabel>
-                      <label>Generations</label>
-                      <p-inputNumber formControlName="generationsPlayed" [min]="0" />
-                    </p-iftalabel>
-                  </div>
-
-                  <div class="checkbox-field">
-                    <p-checkbox formControlName="completed" [binary]="true" inputId="completed-{{ roundIndex }}-{{ sessionIndex }}" />
-                    <label for="completed-{{ roundIndex }}-{{ sessionIndex }}">Completed</label>
-                  </div>
-
-                  <button type="button" mat-stroked-button (click)="addPlayerScore(roundIndex, sessionIndex)">Add player</button>
-                  <button type="button" mat-stroked-button color="warn" (click)="removeGameSession(roundIndex, sessionIndex)">
-                    Delete table
-                  </button>
-                </div>
-
-                @if (getPlayerScoreControls(roundIndex, sessionIndex).length === 0) {
-                  <p class="empty-state">No player scores yet.</p>
-                }
-                <table class="player-scores-table">
-                    <tr>
-                        <th>Player</th>
-                        <th>Points</th>
-                        <th>MC</th>
-                        <th>Corporation</th>
-                        <th>Preludes</th>
-                        <th>Actions</th>
-                    </tr>
-                @for (playerScoreControl of getPlayerScoreControls(roundIndex, sessionIndex); track $index; let scoreIndex = $index) {
-                  <tr class="player-score-row" [formGroup]="playerScoreControl">
-                    <td class="stretch-child">
-                      <p-select [filter]="true" [options]="getPlayerOptions()" optionLabel="label" optionValue="value" filterBy="secretLabel" formControlName="playerId" appendTo="body" > 
-                        <ng-template let-player #item>
-    	                    <span>{{ player.secretLabel }}</span>
-    	                </ng-template>
-                      </p-select>
-                    </td>
-
-                    <td class="field">
-                      <p-inputNumber class="small-integer" formControlName="pointScore" [min]="0" />
-                    </td>
-
-                    <td class="field">
-                      <p-inputNumber class="small-integer" formControlName="megaCreditScore" [min]="0" />
-                    </td>
-
-                    <td class="stretch-child">
-                      <p-select [filter]="true" [options]="getCorporationOptions()" optionLabel="label" optionValue="value" formControlName="corporationCard" appendTo="body" />
-                    </td>
-
-                    <td class="field stretch-child">
-                      <p-multiSelect [filter]="true" [options]="getPreludeOptions()" optionLabel="label" optionValue="value" formControlName="preludeCards" appendTo="body" />
-                    </td>
-
-                    <td>
-                      <button type="button" mat-icon-button color="warn" (click)="removePlayerScore(roundIndex, sessionIndex, scoreIndex)">
-                        <mat-icon>delete</mat-icon>
-                      </button>
-                    </td>
-                  </tr>
-                }
-                </table>
-              </mat-card-content>
-            </mat-card>
+            <app-tournament-game-session
+              [gameSessionForm]="gameSessionControl"
+              [boardOptions]="boardOptions"
+              [playerOptions]="getPlayerOptions()"
+              [corporationOptions]="getCorporationOptions()"
+              [preludeOptions]="getPreludeOptions()"
+              (addPlayerScore)="addPlayerScore(roundIndex, sessionIndex)"
+              (removePlayerScore)="removePlayerScore(roundIndex, sessionIndex, $event)"
+              (deleteGameSession)="removeGameSession(roundIndex, sessionIndex)">
+            </app-tournament-game-session>
           }
           </div>
         </div>
@@ -123,95 +46,31 @@
       @if (finalRoundForm) {
         <div class="round-panel final-round-panel" [formGroup]="finalRoundForm">
           <div class="round-header">
-            <div class="field field-title">
-              <label for="final-round-title">Final round title</label>
+             <p-iftalabel>
+                <label for="final-round-title">Final round title</label>
               <input id="final-round-title" pInputText formControlName="title" />
-            </div>
-
-            <button type="button" mat-stroked-button color="primary" (click)="addFinalRoundGameSession()">
+             </p-iftalabel>
+             @if(getFinalRoundGameSessionControls().length === 0) {
+              <button type="button" mat-stroked-button color="primary" (click)="addFinalRoundGameSession()">
               Add final game session
             </button>
+             }
+            
           </div>
-
+          <div class="game-sessions-container">
           @for (gameSessionControl of getFinalRoundGameSessionControls(); track $index; let sessionIndex = $index) {
-            <mat-card class="game-session-card" [formGroup]="gameSessionControl">
-              <mat-card-header>
-                <mat-card-title>Final table {{ gameSessionControl.get('tableNumber')?.value ?? sessionIndex + 1 }}</mat-card-title>
-              </mat-card-header>
-
-              <mat-card-content class="mat-card-content-tight">
-                <div class="session-fields">
-                  <div class="field">
-                    <label>Board</label>
-                    <p-select [options]="boardOptions" formControlName="board" />
-                  </div>
-
-                  <div class="field">
-                    <label>Table</label>
-                    <p-inputNumber formControlName="tableNumber" [min]="1" />
-                  </div>
-
-                  <div class="field">
-                    <label>Generations played</label>
-                    <p-inputNumber formControlName="generationsPlayed" [min]="0" />
-                  </div>
-
-                  <div class="checkbox-field">
-                    <p-checkbox formControlName="completed" [binary]="true" inputId="final-completed-{{ sessionIndex }}" />
-                    <label for="final-completed-{{ sessionIndex }}">Completed</label>
-                  </div>
-                </div>
-                <table class="player-scores-table">
-                    <th>Player</th>
-                    <th>Points</th>
-                    <th>MC</th>
-                    <th>Corporation</th>
-                    <th>Preludes</th>
-                    <th>Actions</th>
-                @for (playerScoreControl of getFinalRoundPlayerScoreControls(sessionIndex); track $index; let scoreIndex = $index) {
-                  <tr class="player-score-row" [formGroup]="playerScoreControl">
-                    <td class="field">
-                      <!-- <label>Player</label> -->
-                      <p-select [filter]="true" [options]="getPlayerOptions()" optionLabel="label" optionValue="value" formControlName="playerId"  appendTo="body" />
-                    </td>
-
-                    <td class="field">
-                      <!-- <label>Points</label> -->
-                      <p-inputNumber formControlName="pointScore" [min]="0" />
-                    </td>
-
-                    <td class="field">
-                      <!-- <label>Mega credits</label> -->
-                      <p-inputNumber formControlName="megaCreditScore" [min]="0" />
-                    </td>
-
-                    <td class="field">
-                      <!-- <label>Corporation</label> -->
-                      <p-select [options]="getCorporationOptions()" optionLabel="label" optionValue="value" formControlName="corporationCard"  appendTo="body" />
-                    </td>
-
-                    <td class="field field-wide">
-                      <!-- <label>Prelude cards</label> -->
-                      <p-multiSelect [options]="getPreludeOptions()" optionLabel="label" optionValue="value" formControlName="preludeCards" appendTo="body" />
-                    </td>
-
-                    <td class="field">
-                      <button type="button" mat-icon-button color="warn" (click)="removeFinalRoundPlayerScore(sessionIndex, scoreIndex)">
-                        <mat-icon>delete</mat-icon>
-                      </button>
-                    </td>
-                  </tr>
-                }
-            </table>
-              </mat-card-content>
-
-              <mat-card-actions align="end">
-                <button type="button" mat-stroked-button color="warn" (click)="removeFinalRoundGameSession(sessionIndex)">
-                  Delete table
-                </button>
-              </mat-card-actions>
-            </mat-card>
+            <app-tournament-game-session
+              [gameSessionForm]="gameSessionControl"
+              [boardOptions]="boardOptions"
+              [playerOptions]="getPlayerOptions()"
+              [corporationOptions]="getCorporationOptions()"
+              [preludeOptions]="getPreludeOptions()"
+              (addPlayerScore)="addFinalRoundPlayerScore(sessionIndex)"
+              (removePlayerScore)="removeFinalRoundPlayerScore(sessionIndex, $event)"
+              (deleteGameSession)="removeFinalRoundGameSession(sessionIndex)">
+            </app-tournament-game-session>
           }
+          </div>
 
           <div class="final-round-actions">
             <button type="button" mat-stroked-button color="warn" (click)="removeFinalRound()">Remove final round</button>

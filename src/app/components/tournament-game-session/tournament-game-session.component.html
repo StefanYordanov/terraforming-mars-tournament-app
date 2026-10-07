@@ -1,0 +1,98 @@
+<mat-card class="game-session-card" [formGroup]="gameSessionForm()">
+  <mat-card-content class="mat-card-content-tight">
+    <div class="session-header">
+      <div class="session-fields">
+        <div class="field">
+          <p-iftalabel>
+            <p-inputNumber class="small-integer" formControlName="tableNumber" [min]="1" />
+            <label>Table</label>
+          </p-iftalabel>
+        </div>
+
+        <div class="field">
+          <p-iftalabel>
+            <p-select [options]="boardOptions()" formControlName="board" />
+            <label>Board</label>
+          </p-iftalabel>
+        </div>
+
+        <div class="field">
+          <p-iftalabel>
+            <p-inputNumber formControlName="generationsPlayed" [min]="0" />
+            <label>Generations</label>
+          </p-iftalabel>
+        </div>
+
+        <div class="field d-none">
+          <input type="number" formControlName="dummyPlayersCount" [min]="0" />
+        </div>
+
+        <div class="checkbox-field">
+          <p-checkbox formControlName="completed" [binary]="true" [inputId]="'completed-' + gameSessionForm().value.tableNumber" />
+          <label [attr.for]="'completed-' + gameSessionForm().value.tableNumber">Completed</label>
+        </div>
+
+      </div>
+      <div class="session-fields">
+        <button type="button" matMiniFab matTooltip="Add Player Score" class="p-button-success" (click)="onAddPlayerScore()"><mat-icon>person_add</mat-icon></button>
+        <button type="button" matMiniFab matTooltip="Add Dummy Player" class="p-button-success" (click)="onAddDummyPlayerScore()"><mat-icon>person_pin_circle</mat-icon></button>
+        <button type="button" matMiniFab matTooltip="Toggle calculated scores" class="p-button-info" ><mat-icon>show_chart</mat-icon></button>
+        <button type="button" matMiniFab matTooltip="Delete Game Session" class="p-button-danger" (click)="onDelete()"><mat-icon>delete</mat-icon></button>
+      </div>
+    </div>
+
+    @if (getPlayerScoreControls().length === 0) {
+      <p class="empty-state">No player scores yet.</p>
+    }
+    @else {
+        <div class="player-scores-table-wrapper">
+      <table class="player-scores-table">
+        <tr>
+          <th>Player</th>
+          <th>Points</th>
+          <th>MC</th>
+          <th>Corporation</th>
+          <th>Preludes</th>
+          <th></th>
+        </tr>
+
+        @for (playerScoreControl of getPlayerScoreControls(); track $index; let scoreIndex = $index) {
+          <tr class="player-score-row" [formGroup]="playerScoreControl">
+            <td class="stretch-child">
+              <p-select [filter]="true" [options]="playerOptions()" optionLabel="label" optionValue="value" formControlName="playerId" appendTo="body">
+                <ng-template let-player #item>
+                  <span>{{ player.secretLabel ?? player.label }}</span>
+                </ng-template>
+              </p-select>
+            </td>
+
+            <td class="field">
+              <p-inputNumber class="small-integer" formControlName="pointScore" [min]="0" />
+            </td>
+
+            <td class="field">
+              <p-inputNumber class="small-integer" formControlName="megaCreditScore" [min]="0" />
+            </td>
+
+            <td class="stretch-child">
+              <p-select [filter]="true" [options]="corporationOptions()" optionLabel="label" optionValue="value" formControlName="corporationCard" appendTo="body" />
+            </td>
+
+            <td class="field stretch-child">
+              <p-multiSelect [filter]="true" [options]="preludeOptions()" optionLabel="label" optionValue="value" formControlName="preludeCards" appendTo="body" />
+            </td>
+
+            <td>
+              <button type="button" mat-icon-button color="warn" (click)="onRemovePlayerScore(scoreIndex)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </table>
+    </div>
+    }
+
+    
+  </mat-card-content>
+</mat-card>

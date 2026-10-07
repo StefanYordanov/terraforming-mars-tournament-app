@@ -1,0 +1,50 @@
+.session-fields {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.player-scores-table {
+  border-collapse: collapse;
+}
+
+.checkbox-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-score-row {
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.stretch-child > * {
+  width: 100%;
+}
+
+.empty-state {
+  margin: 0.5rem 0 1rem;
+}
+
+p-inputnumber {
+    width: 95px;
+}
+
+mat-card-content.mat-card-content-tight{
+    padding: 5px;
+}
+
+p-inputnumber.small-integer {
+    width: 60px;
+}
+
+td.stretch-child >* {
+    width: 100%;
+}

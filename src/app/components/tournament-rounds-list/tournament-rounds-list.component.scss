@@ -27,12 +27,6 @@
   gap: 1rem;
 }
 
-.checkbox-field {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .session-fields {
   display: flex;
   gap: 1rem;
@@ -63,18 +57,4 @@
   padding: 1rem 0;
 }
 
-p-inputnumber {
-    width: 95px;
-}
 
-mat-card-content.mat-card-content-tight{
-    padding: 5px;
-}
-
-p-inputnumber.small-integer {
-    width: 60px;
-}
-
-td.stretch-child >* {
-    width: 100%;
-}

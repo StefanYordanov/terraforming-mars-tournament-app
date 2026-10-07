@@ -1,5 +1,5 @@
 import { BoardEnum } from "./board.model";
-import { GameSession } from "./game-session.model";
+import { GameSession, ComputedGameSession } from "./game-session.model";
 import { Player } from "./player.model";
 
 export interface TournamentRound {
@@ -10,9 +10,8 @@ export interface TournamentRound {
 
 export interface ComputedTournamentRound {
   id: number;
-  board: BoardEnum;
   title: string;
   players: Player[];
   unassignedPlayers: Player[];
-  gameSessions: GameSession[];
+  gameSessions: (ComputedGameSession | null)[];
 }
