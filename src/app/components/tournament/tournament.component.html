@@ -30,13 +30,18 @@
             <h3>Rounds</h3>
             <app-tournament-rounds-list
               [tournament]="$tournament()!"
+              [computedTournament]="$computedTournament()!"
               [players]="store.$state()!.players!"
               (valuesChanged)="tournamentRoundsChanged($event)">
             </app-tournament-rounds-list>
         </div>
         @if(isRankingViewSelected()) {
             <div class ="column ranking">
-                rankingrankingrankingrankingranking
+                <!-- <app-tournament-ranking-list
+                    [tournament]="$tournament()!"
+                    [computedTournament]="$computedTournament()!"
+                    [players]="store.$state()!.players!">
+                </app-tournament-ranking-list> -->
             </div>
         }
         

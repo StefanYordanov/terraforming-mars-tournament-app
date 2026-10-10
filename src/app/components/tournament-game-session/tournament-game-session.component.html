@@ -36,7 +36,7 @@
       <div class="session-fields">
         <button type="button" matMiniFab matTooltip="Add Player Score" class="p-button-success" (click)="onAddPlayerScore()"><mat-icon>person_add</mat-icon></button>
         <button type="button" matMiniFab matTooltip="Add Dummy Player" class="p-button-success" (click)="onAddDummyPlayerScore()"><mat-icon>person_pin_circle</mat-icon></button>
-        <button type="button" matMiniFab matTooltip="Toggle calculated scores" class="p-button-info" ><mat-icon>show_chart</mat-icon></button>
+        <button type="button" [disabled]="!computedGameSession()" matMiniFab matTooltip="Toggle calculated scores" class="p-button-info" (click)="toggleComputedDetails()"><mat-icon>show_chart</mat-icon></button>
         <button type="button" matMiniFab matTooltip="Delete Game Session" class="p-button-danger" (click)="onDelete()"><mat-icon>delete</mat-icon></button>
       </div>
     </div>
@@ -49,10 +49,14 @@
       <table class="player-scores-table">
         <tr>
           <th>Player</th>
-          <th>Points</th>
-          <th>MC</th>
+          <th>TR</th>
+          <th>M€</th>
           <th>Corporation</th>
           <th>Preludes</th>
+          @if(computedGameSession() && showComputedDetails()) {
+            <th>Domination</th>
+            <th>Rank</th>
+          }
           <th></th>
         </tr>
 
@@ -81,7 +85,15 @@
             <td class="field stretch-child">
               <p-multiSelect [filter]="true" [options]="preludeOptions()" optionLabel="label" optionValue="value" formControlName="preludeCards" appendTo="body" />
             </td>
+            @if(computedGameSession() && showComputedDetails()) {
+              <td class="field plain-table-value">
+                {{ computedGameSession()?.playerScores?.[scoreIndex]?.dominationPointScore | number:'1.0-3' }}
+              </td>
 
+              <td class="field plain-table-value">
+                {{ computedGameSession()?.playerScores?.[scoreIndex]?.rankPointScore ?? '-' }}
+              </td>
+            }
             <td>
               <button type="button" mat-icon-button color="warn" (click)="onRemovePlayerScore(scoreIndex)">
                 <mat-icon>delete</mat-icon>
@@ -89,6 +101,29 @@
             </td>
           </tr>
         }
+        @let computedSession = computedGameSession();
+        @if(computedSession){
+            @for(dummy of computedSession.dummyPlayerScores; track $index) {
+                <tr class="dummy-player-score-row">
+                    <td class="field plain-table-value">Dummy Player</td>
+                    <td class="field plain-table-value">{{ dummy.pointScore | number:'1.0-3' }}</td>
+                    <td class="field plain-table-value"> {{ dummy.megaCreditScore | number:'1.0-3' }} </td>
+                    <td class="field plain-table-value"> - </td>
+                    <td class="field plain-table-value"> - </td>
+                    @if(showComputedDetails()) {
+                        <td class="field plain-table-value">{{ dummy.dominationPointScore | number:'1.0-3' }}</td>
+                        <td class="field plain-table-value">{{ dummy.rankPointScore }}</td>
+                    }
+                    
+                    <td>
+                        <button type="button" mat-icon-button color="warn" (click)="onRemoveDummyPlayerScore()">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        
       </table>
     </div>
     }

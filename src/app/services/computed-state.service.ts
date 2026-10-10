@@ -12,11 +12,11 @@ export class ComputedStateService {
   private START_TR_RATING = 20;
 
   private precalculatedRankPointAwards: { [key: number]: number[] } = {
-    2: [100, 10],
-    3: [100, 55, 10],
-    4: [100, 70, 40, 10],
-    5: [100, 77, 55, 33, 10],
-    6: [100, 82, 64, 46, 28, 10],
+    2: [ this.RANK_POINTS_FIRST_PLACE, this.RANK_POINTS_LAST_PLACE],
+    3: [ this.RANK_POINTS_FIRST_PLACE, 55, this.RANK_POINTS_LAST_PLACE],
+    4: [ this.RANK_POINTS_FIRST_PLACE, 70, 40, this.RANK_POINTS_LAST_PLACE],
+    5: [ this.RANK_POINTS_FIRST_PLACE, 77, 55, 33, this.RANK_POINTS_LAST_PLACE],
+    6: [ this.RANK_POINTS_FIRST_PLACE, 82, 64, 46, 28, this.RANK_POINTS_LAST_PLACE],
   };
 
   public generateRankPointAwards(numberOfPlayers: number): number[] | null {
@@ -30,13 +30,22 @@ export class ComputedStateService {
 
     const awards: number[] = [];
     const range = this.RANK_POINTS_FIRST_PLACE - this.RANK_POINTS_LAST_PLACE;
+    const middle = (this.RANK_POINTS_FIRST_PLACE + this.RANK_POINTS_LAST_PLACE) / 2;
 
     const step = range / Math.max(1, numberOfPlayers - 1);
 
     for (let i = 0; i < numberOfPlayers; i++) {
-      awards.push(Math.round(this.RANK_POINTS_FIRST_PLACE - (i * step)));
+      let rank = this.RANK_POINTS_FIRST_PLACE - (i * step);
+      if(rank - Math.floor(rank) != 0.5) {
+        awards.push(Math.round(rank));
+      } else {
+        if(rank >= middle) {
+          awards.push(Math.floor(rank));
+        } else {
+          awards.push(Math.round(rank));
+        }
+      }
     }
-    console.log(awards);
     return awards;
   }
 
@@ -64,9 +73,13 @@ export class ComputedStateService {
           return { ...playerScore, rankPointScore: 0, dominationPointScore: 0 };
         });
     const tiebreakPointCoeficient = 0.5;
-    const totalAccumulatedPointScore = calculatedDummyPlayers
-      .reduce((sum, player) => sum + player.pointScore - this.START_TR_RATING, 0) +
-      calculatedPlayerScores.reduce((sum, player) => sum + player.pointScore - this.START_TR_RATING, 0) + tiebreakPointCoeficient;
+    const totalAccumulatedPointScore =
+    calculatedDummyPlayers.reduce(
+      (sum, player) => sum + player.pointScore - this.START_TR_RATING, 0)
+        +
+    calculatedPlayerScores.reduce(
+      (sum, player) => sum + player.pointScore - this.START_TR_RATING, 0)
+        + tiebreakPointCoeficient;
     const totalAccumulatedMegaCreditScore = calculatedDummyPlayers
       .reduce((sum, player) => sum + player.megaCreditScore, 0) +
       calculatedPlayerScores.reduce((sum, player) => sum + player.megaCreditScore, 0);
@@ -89,12 +102,12 @@ export class ComputedStateService {
     const allPlayers = [...calculatedPlayerScores, ...calculatedDummyPlayers];
 
     for(let player of calculatedPlayerScores) {
-      const playersBetterThanThisPlayer = allPlayers.filter(p => p.pointScore > player.pointScore).length;
+      const playersBetterThanThisPlayer = allPlayers.filter(p => p.dominationPointScore > player.dominationPointScore).length;
       player.rankPointScore = rankPointAwards[playersBetterThanThisPlayer];
     }
 
     for(let dummyPlayer of calculatedDummyPlayers) {
-      const playersBetterThanThisPlayer = allPlayers.filter(p => p.pointScore > dummyPlayer.pointScore).length;
+      const playersBetterThanThisPlayer = allPlayers.filter(p => p.dominationPointScore > dummyPlayer.dominationPointScore).length;
       dummyPlayer.rankPointScore = rankPointAwards[playersBetterThanThisPlayer];
     }
 
@@ -105,7 +118,7 @@ export class ComputedStateService {
     };
   }
 
-  public computeTournamentRound(round: TournamentRound, players: Player[]): ComputedTournamentRound | null {
+  public computeTournamentRound(round: TournamentRound, players: Player[]): ComputedTournamentRound {
     return {
       ...round,
       players: players,
@@ -116,18 +129,86 @@ export class ComputedStateService {
 
   public computeTournament(tournament: Tournament, players: Record<number, Player>): ComputedTournament | null {
     const tournamentPlayers = tournament.playersIds.map(playerId => players[playerId]).filter((player): player is Player => !!player);
-
+    const computedQualifierRounds = tournament.qualifierRounds.map(round => this.computeTournamentRound(round, tournamentPlayers));
+    const computedFinalRound = tournament.finalRound ? this.computeTournamentRound(tournament.finalRound, tournamentPlayers) : null;
     return {
       ...tournament,
       players: tournamentPlayers,
-      qualifierRounds: tournament.qualifierRounds.map(round => this.computeTournamentRound(round, tournamentPlayers)).filter((round): round is ComputedTournamentRound => round !== null),
-      finalRound: tournament.finalRound ? this.computeTournamentRound(tournament.finalRound, tournamentPlayers) : null,
-      playerRankings: this.computePlayerRankings(tournament, tournamentPlayers),
+      qualifierRounds: computedQualifierRounds,
+      finalRound: computedFinalRound,
+      playerRankings: this.computePlayerRankings(tournament, tournamentPlayers, computedQualifierRounds, computedFinalRound),
     };
   }
 
-  computePlayerRankings(tournament: Tournament, players: Player[]): ComputedPlayerRanking[] | null {
-    return null;
+  computePlayerRankings(tournament: Tournament,
+    tournamentPlayers: Player[],
+    qualifierRounds: ComputedTournamentRound[],
+    finalRound: ComputedTournamentRound | null): ComputedPlayerRanking[] | null {
+    const playerAwards = this.generateRankPointAwards(tournamentPlayers.length);
+    if(!playerAwards) {
+      return null;
+    }
+    let playerRankings: ComputedPlayerRanking[] = tournamentPlayers.map(player => {
+      const finalRoundTournamentPoints = finalRound ? finalRound.gameSessions.reduce((sum, session) => {
+        const playerScore = session?.playerScores.find(score => score.playerId === player.id);
+        return sum + (playerScore ? playerScore.rankPointScore : 0);
+      }, 0) : null;
+
+      const qualifierTournamentPoints = qualifierRounds.map(round => {
+        return round.gameSessions.reduce((sum, session) => {
+          const playerScore = session?.playerScores.find(score => score.playerId === player.id);
+          return sum + (playerScore ? playerScore.rankPointScore : 0);
+        }, 0);
+      });
+
+      const qualifierTournamentPointsTotal = qualifierTournamentPoints.reduce((sum, points) => sum + points, 0);
+      const qualifierDominancePoints = qualifierRounds.map(round => {
+        return round.gameSessions.reduce((sum, session) => {
+          const playerScore = session?.playerScores.find(score => score.playerId === player.id);
+          return sum + (playerScore ? playerScore.dominationPointScore : 0);
+        }, 0);
+      });
+      const qualifierDominancePointsTotal = qualifierDominancePoints.reduce((sum, points) => sum + points, 0);
+
+      return {
+        player: player,
+        rank: 0,
+        rankPoints: 0,
+        finalRoundTournamentPoints,
+        qualifierTournamentPoints,
+        qualifierTournamentPointsTotal,
+        qualifierDominancePoints,
+        qualifierDominancePointsTotal
+      };
+    });
+
+    for(let playerRanking of playerRankings){
+      playerRanking.rank = playerRankings.filter(x => this.comparePlayerRankings(playerRanking, x) > 0).length + 1;
+      playerRanking.rankPoints = playerAwards[playerRanking.rank - 1];
+    }
+
+    return playerRankings;
+  }
+
+  private comparePlayerRankings(a: ComputedPlayerRanking, b: ComputedPlayerRanking): number {
+    if((b.finalRoundTournamentPoints || 0) - (a.finalRoundTournamentPoints || 0) !== 0) {
+      return (b.finalRoundTournamentPoints || 0) - (a.finalRoundTournamentPoints || 0);
+    }
+    if(b.qualifierTournamentPointsTotal - a.qualifierTournamentPointsTotal !== 0) {
+      return b.qualifierTournamentPointsTotal - a.qualifierTournamentPointsTotal;
+    }
+    const sortedQualifierPointsA = a.qualifierTournamentPoints.slice().sort((x, y) => y - x);
+    const sortedQualifierPointsB = b.qualifierTournamentPoints.slice().sort((x, y) => y - x);
+
+    for(let i = 0, len = Math.max(sortedQualifierPointsA.length, sortedQualifierPointsB.length); i < len; i++) {
+      const qualifierTournamentPointsA = sortedQualifierPointsA[i] || 0;
+      const qualifierTournamentPointsB = sortedQualifierPointsB[i] || 0;
+      if(qualifierTournamentPointsB - qualifierTournamentPointsA !== 0) {
+        return qualifierTournamentPointsB - qualifierTournamentPointsA;
+      }
+    }
+
+    return b.qualifierDominancePointsTotal - a.qualifierDominancePointsTotal;
   }
 
   private getAveragePlayerScores(gameSession: GameSession): { pointScore: number; megaCreditScore: number } {

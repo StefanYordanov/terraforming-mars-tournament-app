@@ -39,15 +39,6 @@ export class TournamentComponent {
   $tournamentId = toSignal(this.route.params.pipe(
     map(params => Number(params['tournamentId']))));
 
-  constructor() {
-    effect(() => {
-      const tournament = this.$tournament();
-      if(tournament) {
-        console.log(this.computedStateService.computeTournament(tournament, this.store.$state()?.players || []));
-      }
-    });
-  }
-
   $breadcrumbItems = computed(() => {
     const group = this.$tournamentGroup();
     const tournament = this.$tournament();
@@ -61,6 +52,11 @@ export class TournamentComponent {
     ];
   });
 
+  constructor() {
+    effect(() => {
+      console.log(this.$computedTournament());
+    });
+  }
 
   $tournament = computed(() => {
     const groupId = this.$tournamentGroupId();
@@ -70,6 +66,14 @@ export class TournamentComponent {
     }
     const group = this.store.$state()?.tournamentGroups?.find(g => g.id === groupId);
     return group?.tournaments?.find(t => t.id === tournamentId) || null;
+  });
+
+  $computedTournament = computed(() => {
+    const tournament = this.$tournament();
+    if(!tournament) {
+      return null;
+    }
+    return this.computedStateService.computeTournament(tournament, this.store.$state()?.players || {});
   });
 
   $tournamentGroup = computed(() => {

@@ -15,11 +15,11 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { BoardEnum } from '../../models/board.model';
-import { GameSession } from '../../models/game-session.model';
+import { ComputedGameSession, GameSession } from '../../models/game-session.model';
 import { PlayerScore } from '../../models/player-score.model';
 import { Player } from '../../models/player.model';
 import { TournamentRound } from '../../models/tournament-round.model';
-import { Tournament } from '../../models/tournament.model';
+import { ComputedTournament, Tournament } from '../../models/tournament.model';
 import { CORPORATIONS } from '../../consts/corporations.const';
 import { PRELUDES } from '../../consts/preludes.const';
 import { TournamentGameSessionComponent } from '../tournament-game-session/tournament-game-session.component';
@@ -49,7 +49,15 @@ import { TournamentGameSessionComponent } from '../tournament-game-session/tourn
   styleUrl: './tournament-rounds-list.component.scss',
 })
 export class TournamentRoundsListComponent {
+  getComputedFinalRoundGameSession(ct: ComputedTournament,index: number): ComputedGameSession|null {
+    return ct?.finalRound?.gameSessions?.[index] ?? null;
+  }
+
+  getQualifierRoundGameSession(ct: ComputedTournament,roundIndex: number, sessionIndex: number): ComputedGameSession|null {
+    return ct?.qualifierRounds?.[roundIndex]?.gameSessions?.[sessionIndex] ?? null;
+  }
   readonly tournament = input.required<Tournament>();
+  readonly computedTournament = input.required<ComputedTournament>();
   readonly players = input.required<Record<number, Player>>();
   readonly valuesChanged = output<{ qualifierRounds: TournamentRound[]; finalRound: TournamentRound | null }>();
 

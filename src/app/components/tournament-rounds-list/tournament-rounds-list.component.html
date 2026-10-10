@@ -28,6 +28,7 @@
           @for (gameSessionControl of getGameSessionControls(roundIndex); track $index; let sessionIndex = $index) {
             <app-tournament-game-session
               [gameSessionForm]="gameSessionControl"
+              [computedGameSession]="getQualifierRoundGameSession(computedTournament(), roundIndex, sessionIndex)"
               [boardOptions]="boardOptions"
               [playerOptions]="getPlayerOptions()"
               [corporationOptions]="getCorporationOptions()"
@@ -61,6 +62,7 @@
           @for (gameSessionControl of getFinalRoundGameSessionControls(); track $index; let sessionIndex = $index) {
             <app-tournament-game-session
               [gameSessionForm]="gameSessionControl"
+              [computedGameSession]="getComputedFinalRoundGameSession(computedTournament(), sessionIndex)"
               [boardOptions]="boardOptions"
               [playerOptions]="getPlayerOptions()"
               [corporationOptions]="getCorporationOptions()"
