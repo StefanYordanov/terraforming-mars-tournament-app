@@ -72,7 +72,7 @@ export class ComputedStateService {
         gameSession.playerScores.map((playerScore, index) => {
           return { ...playerScore, rankPointScore: 0, dominationPointScore: 0 };
         });
-    const tiebreakPointCoeficient = 0.5;
+    const tiebreakPointCoeficient = 0.1 * numberOfPlayers;
     const totalAccumulatedPointScore =
     calculatedDummyPlayers.reduce(
       (sum, player) => sum + player.pointScore - this.START_TR_RATING, 0)
