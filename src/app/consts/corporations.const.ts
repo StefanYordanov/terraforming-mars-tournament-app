@@ -16,4 +16,4 @@ export const CORPORATIONS = [
   'Thorgate',
   'Ecoline',
   'Phobolog'
-];
+].sort();

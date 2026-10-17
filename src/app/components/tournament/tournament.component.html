@@ -2,7 +2,8 @@
     <p-breadcrumb [model]="$breadcrumbItems()"></p-breadcrumb>
     <div class="tournament-header-controls">
     <mat-button-toggle-group [(ngModel)]="selectedViews" aria-label="Font Style" multiple>
-       <mat-button-toggle value="players">Players</mat-button-toggle>
+       <mat-button-toggle value="settings">Settings</mat-button-toggle>
+        <mat-button-toggle value="players">Players</mat-button-toggle>
        <mat-button-toggle checked disabled value="rounds">Rounds</mat-button-toggle>
        <mat-button-toggle value="ranking">Ranking</mat-button-toggle>
     </mat-button-toggle-group>
@@ -11,9 +12,20 @@
 <div class="container overflow-hidden">
     <div class="columns tournament-container">
     @if($tournamentId() && store.$state()?.players) {
+        @if(isSettingsViewSelected()){
+            <div class="column tournament-settings">
+               <div class="tournament-header">
+                   <h3>Settings</h3>
+               </div>
+               <app-tournament-settings-dumb
+               [settings]="$tournament()!.settings" 
+               (valuesChanged)="settingsChanged($event)">
+               </app-tournament-settings-dumb>
+
+           </div>
+        }
         @if(isPlayersViewSelected()) {
            <div class="column  player-details">
-
                <div class="players-tab-header">
                    <h3>Players({{ $tournament()!.playersIds.length }})</h3>
                    <button pButton type="button" (click)="generateGameSessions()">generate</button>
@@ -37,11 +49,13 @@
         </div>
         @if(isRankingViewSelected()) {
             <div class ="column ranking">
-                <!-- <app-tournament-ranking-list
-                    [tournament]="$tournament()!"
-                    [computedTournament]="$computedTournament()!"
-                    [players]="store.$state()!.players!">
-                </app-tournament-ranking-list> -->
+                @let playerRankings = $computedTournament()!.playerRankings;
+                @if(playerRankings){
+                    <app-tournament-ranking-list [computedPlayerRankings]="playerRankings">
+                </app-tournament-ranking-list>
+                }
+
+                
             </div>
         }
         

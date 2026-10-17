@@ -12,13 +12,15 @@ export interface ComputedPlayerScore {
     megaCreditScore: number;
     corporationCard: string
     preludeCards: string[];
-    rankPointScore: number;
+    gameSessionRank: number;
+    gameSessionRankPointScore: number;
     dominationPointScore: number;
 }
 
 export interface ComputedDummyScore {
     pointScore: number;
     megaCreditScore: number;
-    rankPointScore: number;
+    gameSessionRank: number;
+    gameSessionRankPointScore: number;
     dominationPointScore: number;
 }

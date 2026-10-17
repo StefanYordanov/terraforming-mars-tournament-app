@@ -180,12 +180,17 @@ export class TournamentRoundsListComponent {
   }
 
   addFinalRound() {
+    const tournament = this.tournament();
+    if(!tournament?.settings?.roundBoards?.length){
+      return;
+    }
+    const finalBoard = tournament.settings.roundBoards[tournament.settings.roundBoards.length - 1];
     this.finalRoundForm = this.createRoundGroup({
       id: Date.now(),
       title: 'Final round',
       gameSessions: [
         {
-          board: BoardEnum.Tharsis,
+          board: finalBoard,
           generationsPlayed: 0,
           tableNumber: 1,
           completed: false,

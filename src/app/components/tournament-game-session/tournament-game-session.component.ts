@@ -35,8 +35,12 @@ import { CommonModule, DecimalPipe } from '@angular/common';
   styleUrl: './tournament-game-session.component.scss',
 })
 export class TournamentGameSessionComponent {
-  readonly gameSessionForm = input.required<FormGroup>();
-  readonly computedGameSession = input.required<ComputedGameSession | null>();
+  readonly $gameSessionForm = input.required<FormGroup>({
+    alias: 'gameSessionForm'
+  });
+  readonly $computedGameSession = input.required<ComputedGameSession | null>({
+    alias: 'computedGameSession'
+  }) ;
   readonly boardOptions = input.required<string[]>();
   readonly playerOptions = input.required<Array<{ label: string; value: number; secretLabel?: string }>>();
   readonly corporationOptions = input.required<Array<{ label: string; value: string }>>();
@@ -48,7 +52,7 @@ export class TournamentGameSessionComponent {
   showComputedDetails = signal<boolean>(false);
 
   getPlayerScoreControls() {
-    const playerScores = this.gameSessionForm().get('playerScores') as FormArray | null;
+    const playerScores = this.$gameSessionForm().get('playerScores') as FormArray | null;
     return ((playerScores?.controls ?? []) as FormGroup[]) ?? [];
   }
 
@@ -57,14 +61,14 @@ export class TournamentGameSessionComponent {
   }
 
   onAddDummyPlayerScore(): void {
-    const dummyPlayersCountControl = this.gameSessionForm().get('dummyPlayersCount');
+    const dummyPlayersCountControl = this.$gameSessionForm().get('dummyPlayersCount');
     if (dummyPlayersCountControl) {
       const currentCount = dummyPlayersCountControl.value ?? 0;
       dummyPlayersCountControl.setValue(currentCount + 1);
     }
   }
   onRemoveDummyPlayerScore() {
-    const dummyPlayersCountControl = this.gameSessionForm().get('dummyPlayersCount');
+    const dummyPlayersCountControl = this.$gameSessionForm().get('dummyPlayersCount');
     if (dummyPlayersCountControl) {
       const currentCount = dummyPlayersCountControl.value ?? 0;
       dummyPlayersCountControl.setValue(currentCount - 1);

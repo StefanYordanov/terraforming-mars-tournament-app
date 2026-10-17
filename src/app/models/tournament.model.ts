@@ -32,7 +32,8 @@ export interface ComputedPlayerRanking {
   player: Player;
   rank: number;
   rankPoints: number;
-  finalRoundTournamentPoints: number | null;
+  finalRoundRank: number | null;
+  finalRoundTournamentRankPoints: number | null;
   qualifierTournamentPoints: number[];
   qualifierTournamentPointsTotal: number;
   qualifierDominancePoints: number[];

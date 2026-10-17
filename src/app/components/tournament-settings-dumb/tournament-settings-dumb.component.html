@@ -1,0 +1,61 @@
+<form class="tournament-settings-form" [formGroup]="settingsForm">
+  <div class="field">
+    <label for="qualifier-rounds-count">Qualifier rounds count</label>
+    <p-inputNumber
+      inputId="qualifier-rounds-count"
+      formControlName="qualifierRoundsCount"
+      [min]="0"
+      [showButtons]="true"
+    />
+  </div>
+
+  <div class="field">
+    <label>Preferred player count per table priority</label>
+    <div class="array-inputs">
+      @for (control of preferredPlayerCountPriorityControls; track $index) {
+        <div class="array-item">
+          <p-select
+            [options]="priorityOptions"
+            optionLabel="label"
+            optionValue="value"
+            [formControl]="control"
+            appendTo="body"
+            placeholder="Select priority"
+          />
+          <button type="button" matMiniFab class="p-button-danger" (click)="removePreferredPlayerCountPriority($index)"><mat-icon>delete</mat-icon></button>
+        </div>
+      }
+    </div>
+    <button type="button" mat-raised-button (click)="addPreferredPlayerCountPriority()">Add priority</button>
+  </div>
+
+  <div class="field">
+    <label for="number-of-tables">Number of tables</label>
+    <p-inputNumber
+      inputId="number-of-tables"
+      formControlName="numberOfTables"
+      [min]="1"
+      [showButtons]="true"
+    />
+  </div>
+
+  <div class="field">
+    <label>Round boards</label>
+    <div class="array-inputs">
+      @for (control of roundBoardControls; track $index) {
+        <div class="array-item">
+          <p-select
+            [options]="boardOptions"
+            optionLabel="label"
+            optionValue="value"
+            [formControl]="control"
+            appendTo="body"
+            placeholder="Select board"
+          />
+          <button type="button" matMiniFab class="p-button-danger" (click)="removeRoundBoard($index)"><mat-icon>delete</mat-icon></button>
+        </div>
+      }
+    </div>
+    <button type="button" mat-raised-button (click)="addRoundBoard()">Add board</button>
+  </div>
+</form>

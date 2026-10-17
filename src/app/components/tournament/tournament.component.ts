@@ -13,10 +13,13 @@ import { ButtonModule } from 'primeng/button';
 import { TournamentRoundsListComponent } from '../tournament-rounds-list/tournament-rounds-list.component';
 import { TournamentRound } from '../../models/tournament-round.model';
 import { ComputedStateService } from '../../services/computed-state.service';
+import { TournamentRankingListComponent } from '../tournament-ranking-list/tournament-ranking-list.component';
+import { TournamentSettingsDumbComponent } from '../tournament-settings-dumb/tournament-settings-dumb.component';
+import { TournamentSettings } from '../../models/tournament-settings.model';
 
 @Component({
   selector: 'app-tournament',
-  imports: [TorunamentPlayersListDumbComponent, TournamentRoundsListComponent, BreadcrumbModule, MatButtonToggleModule, FormsModule, ButtonModule],
+  imports: [TorunamentPlayersListDumbComponent, TournamentRoundsListComponent, BreadcrumbModule, MatButtonToggleModule, FormsModule, ButtonModule, TournamentRankingListComponent, TournamentSettingsDumbComponent],
   templateUrl: './tournament.component.html',
   styleUrl: './tournament.component.scss',
 })
@@ -33,6 +36,7 @@ export class TournamentComponent {
   isRankingViewSelected = computed(() => this.isViewSelected('ranking', this.selectedViews()));
   isRoundsViewSelected = computed(() => this.isViewSelected('rounds', this.selectedViews()));
   isPlayersViewSelected = computed(() => this.isViewSelected('players', this.selectedViews()));
+  isSettingsViewSelected = computed(() => this.isViewSelected('settings', this.selectedViews()));
 
   $tournamentGroupId = toSignal(this.route.params.pipe(
     map(params => Number(params['tournamentGroupId']))));
@@ -103,6 +107,16 @@ export class TournamentComponent {
       qualifierRounds: $event.qualifierRounds,
       finalRound: $event.finalRound,
     });
+  }
+
+  settingsChanged(settings: TournamentSettings) {
+    const tournament = this.$tournament();
+    const tournamentGroupId = this.$tournamentGroupId();
+    const tournamentId = this.$tournamentId();
+    if (!tournament || !tournamentGroupId || !tournamentId) {
+      return;
+    }
+    this.store.setTournament(tournamentGroupId, tournamentId, {...tournament, settings});
   }
 
   generateGameSessions() {

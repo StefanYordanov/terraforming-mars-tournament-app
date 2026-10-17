@@ -62,7 +62,8 @@ export class ComputedStateService {
         calculatedDummyPlayers.push({
           pointScore: averagePlayerValues.pointScore,
           megaCreditScore: averagePlayerValues.megaCreditScore,
-          rankPointScore: 0,
+          gameSessionRankPointScore: 0,
+          gameSessionRank: 0,
           dominationPointScore: 0
         });
       }
@@ -70,7 +71,7 @@ export class ComputedStateService {
 
     let calculatedPlayerScores: ComputedPlayerScore[] =
         gameSession.playerScores.map((playerScore, index) => {
-          return { ...playerScore, rankPointScore: 0, dominationPointScore: 0 };
+          return { ...playerScore, gameSessionRankPointScore: 0, gameSessionRank: 0, dominationPointScore: 0 };
         });
     const tiebreakPointCoeficient = 0.1 * numberOfPlayers;
     const totalAccumulatedPointScore =
@@ -103,12 +104,14 @@ export class ComputedStateService {
 
     for(let player of calculatedPlayerScores) {
       const playersBetterThanThisPlayer = allPlayers.filter(p => p.dominationPointScore > player.dominationPointScore).length;
-      player.rankPointScore = rankPointAwards[playersBetterThanThisPlayer];
+      player.gameSessionRankPointScore = rankPointAwards[playersBetterThanThisPlayer];
+      player.gameSessionRank = playersBetterThanThisPlayer + 1;
     }
 
     for(let dummyPlayer of calculatedDummyPlayers) {
       const playersBetterThanThisPlayer = allPlayers.filter(p => p.dominationPointScore > dummyPlayer.dominationPointScore).length;
-      dummyPlayer.rankPointScore = rankPointAwards[playersBetterThanThisPlayer];
+      dummyPlayer.gameSessionRankPointScore = rankPointAwards[playersBetterThanThisPlayer];
+      dummyPlayer.gameSessionRank = playersBetterThanThisPlayer + 1;
     }
 
     return {
@@ -149,15 +152,23 @@ export class ComputedStateService {
       return null;
     }
     let playerRankings: ComputedPlayerRanking[] = tournamentPlayers.map(player => {
-      const finalRoundTournamentPoints = finalRound ? finalRound.gameSessions.reduce((sum, session) => {
+      const finalRoundTournamentRankPoints = finalRound ? finalRound.gameSessions.reduce((sum, session) => {
         const playerScore = session?.playerScores.find(score => score.playerId === player.id);
-        return sum + (playerScore ? playerScore.rankPointScore : 0);
+        return sum + (playerScore ? playerScore.gameSessionRankPointScore : 0);
       }, 0) : null;
+
+      const finalRoundRank = finalRound ? finalRound.gameSessions.reduce((best : (number | null), session) => {
+        const playerScore = session?.playerScores.find(score => score.playerId === player.id);
+        if(playerScore) {
+          return Math.min(playerScore.gameSessionRank, (best == null ? Number.POSITIVE_INFINITY: best));
+        }
+        return null;
+      }, null) : null;
 
       const qualifierTournamentPoints = qualifierRounds.map(round => {
         return round.gameSessions.reduce((sum, session) => {
           const playerScore = session?.playerScores.find(score => score.playerId === player.id);
-          return sum + (playerScore ? playerScore.rankPointScore : 0);
+          return sum + (playerScore ? playerScore.gameSessionRankPointScore : 0);
         }, 0);
       });
 
@@ -174,7 +185,8 @@ export class ComputedStateService {
         player: player,
         rank: 0,
         rankPoints: 0,
-        finalRoundTournamentPoints,
+        finalRoundRank,
+        finalRoundTournamentRankPoints,
         qualifierTournamentPoints,
         qualifierTournamentPointsTotal,
         qualifierDominancePoints,
@@ -183,16 +195,17 @@ export class ComputedStateService {
     });
 
     for(let playerRanking of playerRankings){
-      playerRanking.rank = playerRankings.filter(x => this.comparePlayerRankings(playerRanking, x) > 0).length + 1;
-      playerRanking.rankPoints = playerAwards[playerRanking.rank - 1];
+      const playersBetterThanThisPlayer = playerRankings.filter(x => this.comparePlayerRankings(playerRanking, x) > 0).length;
+      playerRanking.rank = playersBetterThanThisPlayer + 1;
+      playerRanking.rankPoints = playerAwards[playersBetterThanThisPlayer];
     }
 
     return playerRankings;
   }
 
   private comparePlayerRankings(a: ComputedPlayerRanking, b: ComputedPlayerRanking): number {
-    if((b.finalRoundTournamentPoints || 0) - (a.finalRoundTournamentPoints || 0) !== 0) {
-      return (b.finalRoundTournamentPoints || 0) - (a.finalRoundTournamentPoints || 0);
+    if((b.finalRoundTournamentRankPoints || 0) - (a.finalRoundTournamentRankPoints || 0) !== 0) {
+      return (b.finalRoundTournamentRankPoints || 0) - (a.finalRoundTournamentRankPoints || 0);
     }
     if(b.qualifierTournamentPointsTotal - a.qualifierTournamentPointsTotal !== 0) {
       return b.qualifierTournamentPointsTotal - a.qualifierTournamentPointsTotal;

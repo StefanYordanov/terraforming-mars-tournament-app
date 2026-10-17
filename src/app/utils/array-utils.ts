@@ -11,5 +11,22 @@ export function shuffleArray<T>(array: T[]): T[] {
   return shuffledArray;
 }
 
-// example
-//const values = range(5); // [0, 1, 2, 3, 4]
+export function getRandomInt(min: number, max: number): number {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
+}
+
+export function getRandomIntegerExceptValue(min: number, max: number, exceptValue: number): number {
+  if(exceptValue < min ||  max < exceptValue){
+    return getRandomInt(min, max);
+  } else {
+    const result = getRandomInt(min, max - 1);
+    if(result >= exceptValue){
+      return result + 1;
+    }
+    return result;
+  }
+
+}
+

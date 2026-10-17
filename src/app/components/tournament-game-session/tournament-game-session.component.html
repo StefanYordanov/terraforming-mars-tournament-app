@@ -1,4 +1,5 @@
-<mat-card class="game-session-card" [formGroup]="gameSessionForm()">
+<mat-card class="game-session-card" [formGroup]="$gameSessionForm()">
+  @let computedGameSession = $computedGameSession();
   <mat-card-content class="mat-card-content-tight">
     <div class="session-header">
       <div class="session-fields">
@@ -28,15 +29,15 @@
         </div>
 
         <div class="checkbox-field">
-          <p-checkbox formControlName="completed" [binary]="true" [inputId]="'completed-' + gameSessionForm().value.tableNumber" />
-          <label [attr.for]="'completed-' + gameSessionForm().value.tableNumber">Completed</label>
+          <p-checkbox formControlName="completed" [binary]="true" [inputId]="'completed-' + $gameSessionForm().value.tableNumber" />
+          <label [attr.for]="'completed-' + $gameSessionForm().value.tableNumber">Completed</label>
         </div>
 
       </div>
       <div class="session-fields">
         <button type="button" matMiniFab matTooltip="Add Player Score" class="p-button-success" (click)="onAddPlayerScore()"><mat-icon>person_add</mat-icon></button>
         <button type="button" matMiniFab matTooltip="Add Dummy Player" class="p-button-success" (click)="onAddDummyPlayerScore()"><mat-icon>person_pin_circle</mat-icon></button>
-        <button type="button" [disabled]="!computedGameSession()" matMiniFab matTooltip="Toggle calculated scores" class="p-button-info" (click)="toggleComputedDetails()"><mat-icon>show_chart</mat-icon></button>
+        <button type="button" [disabled]="!computedGameSession" matMiniFab matTooltip="Toggle calculated scores" class="p-button-info" (click)="toggleComputedDetails()"><mat-icon>show_chart</mat-icon></button>
         <button type="button" matMiniFab matTooltip="Delete Game Session" class="p-button-danger" (click)="onDelete()"><mat-icon>delete</mat-icon></button>
       </div>
     </div>
@@ -53,7 +54,7 @@
           <th>M€</th>
           <th>Corporation</th>
           <th>Preludes</th>
-          @if(computedGameSession() && showComputedDetails()) {
+          @if(computedGameSession && showComputedDetails()) {
             <th>Domination</th>
             <th>Rank</th>
           }
@@ -61,7 +62,11 @@
         </tr>
 
         @for (playerScoreControl of getPlayerScoreControls(); track $index; let scoreIndex = $index) {
-          <tr class="player-score-row" [formGroup]="playerScoreControl">
+          @let playerComputedScore = computedGameSession && computedGameSession.playerScores[scoreIndex];
+          <tr class="player-score-row" 
+            [class]="playerComputedScore
+              && 'player-rank-' + playerComputedScore.gameSessionRank" 
+            [formGroup]="playerScoreControl">
             <td class="stretch-child">
               <p-select [filter]="true" [options]="playerOptions()" optionLabel="label" optionValue="value" formControlName="playerId" appendTo="body">
                 <ng-template let-player #item>
@@ -85,13 +90,13 @@
             <td class="field stretch-child">
               <p-multiSelect [filter]="true" [options]="preludeOptions()" optionLabel="label" optionValue="value" formControlName="preludeCards" appendTo="body" />
             </td>
-            @if(computedGameSession() && showComputedDetails()) {
+            @if(computedGameSession && showComputedDetails()) {
               <td class="field plain-table-value">
-                {{ computedGameSession()?.playerScores?.[scoreIndex]?.dominationPointScore | number:'1.0-3' }}
+                {{ computedGameSession.playerScores[scoreIndex].dominationPointScore | number:'1.0-3' }}
               </td>
 
               <td class="field plain-table-value">
-                {{ computedGameSession()?.playerScores?.[scoreIndex]?.rankPointScore ?? '-' }}
+                {{ computedGameSession.playerScores[scoreIndex].gameSessionRankPointScore }}
               </td>
             }
             <td>
@@ -101,10 +106,12 @@
             </td>
           </tr>
         }
-        @let computedSession = computedGameSession();
-        @if(computedSession){
-            @for(dummy of computedSession.dummyPlayerScores; track $index) {
-                <tr class="dummy-player-score-row">
+        @if(computedGameSession){
+            @for(dummy of computedGameSession.dummyPlayerScores; track $index; let scoreIndex = $index) {
+                @let dummyComputedScore = computedGameSession && computedGameSession.dummyPlayerScores[scoreIndex];
+                <tr class="dummy-player-score-row"
+                [class]="dummyComputedScore
+                  && 'player-rank-' + dummyComputedScore.gameSessionRank" >
                     <td class="field plain-table-value">Dummy Player</td>
                     <td class="field plain-table-value">{{ dummy.pointScore | number:'1.0-3' }}</td>
                     <td class="field plain-table-value"> {{ dummy.megaCreditScore | number:'1.0-3' }} </td>
@@ -112,7 +119,7 @@
                     <td class="field plain-table-value"> - </td>
                     @if(showComputedDetails()) {
                         <td class="field plain-table-value">{{ dummy.dominationPointScore | number:'1.0-3' }}</td>
-                        <td class="field plain-table-value">{{ dummy.rankPointScore }}</td>
+                        <td class="field plain-table-value">{{ dummy.gameSessionRankPointScore }}</td>
                     }
                     
                     <td>
