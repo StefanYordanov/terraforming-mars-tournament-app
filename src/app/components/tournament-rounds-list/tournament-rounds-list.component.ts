@@ -214,6 +214,33 @@ export class TournamentRoundsListComponent {
     return ((this.finalRoundForm.get('gameSessions') as FormArray | null)?.controls ?? []) as FormGroup[];
   }
 
+  swapQualifierRoundTables(roundIndex: number, table1Index: number, table2Index: number) {
+    const tournament = structuredClone(this.tournament());
+    if(!tournament) {
+      return;
+    }
+    const qualifierRound = tournament.qualifierRounds[roundIndex];
+    if(!qualifierRound) {
+      return;
+    };
+    const table1 = qualifierRound.gameSessions[table1Index];
+    const table2 = qualifierRound.gameSessions[table2Index];
+    if(!table1 || !table2) {
+      return;
+    }
+    const table1Number = table1.tableNumber;
+    const table2Number = table2.tableNumber;
+    let swap = qualifierRound.gameSessions[table1Index];
+    qualifierRound.gameSessions[table1Index] = qualifierRound.gameSessions[table2Index];
+    qualifierRound.gameSessions[table2Index] = swap;
+    qualifierRound.gameSessions[table1Index].tableNumber = table1Number;
+    qualifierRound.gameSessions[table2Index].tableNumber = table2Number;
+    this.valuesChanged.emit({
+      qualifierRounds : tournament.qualifierRounds,
+      finalRound: tournament.finalRound});
+    return;
+  }
+
   getFinalRoundPlayerScoreControls(sessionIndex: number): FormGroup[] {
     if (!this.finalRoundForm) {
       return [];

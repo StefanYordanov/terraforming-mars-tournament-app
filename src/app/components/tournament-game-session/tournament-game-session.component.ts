@@ -45,6 +45,9 @@ export class TournamentGameSessionComponent {
   readonly playerOptions = input.required<Array<{ label: string; value: number; secretLabel?: string }>>();
   readonly corporationOptions = input.required<Array<{ label: string; value: string }>>();
   readonly preludeOptions = input.required<Array<{ label: string; value: string }>>();
+  readonly moveUpAction = input<() => void>();
+  readonly moveDownAction = input<() => void>();
+
   readonly addPlayerScore = output<void>();
   readonly removePlayerScore = output<number>();
   readonly deleteGameSession = output<void>();

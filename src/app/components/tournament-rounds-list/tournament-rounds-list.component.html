@@ -25,7 +25,8 @@
             <p class="empty-state">No game sessions yet for this round.</p>
           }
           <div class="game-sessions-container">
-          @for (gameSessionControl of getGameSessionControls(roundIndex); track $index; let sessionIndex = $index) {
+            @let qualifierGameSessionControls = getGameSessionControls(roundIndex);
+          @for (gameSessionControl of qualifierGameSessionControls; track $index; let sessionIndex = $index) {
             <app-tournament-game-session
               [gameSessionForm]="gameSessionControl"
               [computedGameSession]="getQualifierRoundGameSession(computedTournament(), roundIndex, sessionIndex)"
@@ -33,6 +34,10 @@
               [playerOptions]="getPlayerOptions()"
               [corporationOptions]="getCorporationOptions()"
               [preludeOptions]="getPreludeOptions()"
+              [moveUpAction]="sessionIndex === 0 ? undefined : 
+                () => swapQualifierRoundTables(roundIndex, sessionIndex, sessionIndex - 1)"
+              [moveDownAction] = "sessionIndex === qualifierGameSessionControls.length - 1 ? undefined : 
+                () => swapQualifierRoundTables(roundIndex, sessionIndex, sessionIndex + 1)"
               (addPlayerScore)="addPlayerScore(roundIndex, sessionIndex)"
               (removePlayerScore)="removePlayerScore(roundIndex, sessionIndex, $event)"
               (deleteGameSession)="removeGameSession(roundIndex, sessionIndex)">

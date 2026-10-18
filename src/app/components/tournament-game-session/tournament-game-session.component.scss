@@ -59,3 +59,13 @@ td.stretch-child >* {
 .plain-table-value{
     padding: 0.5rem;
 }
+
+.up-down-buttons{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  .tight-btn{
+    height: 25px;
+  }
+}
