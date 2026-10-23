@@ -5,11 +5,9 @@ import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { AppStore } from '../../+store/app.store';
 import { TorunamentPlayersListDumbComponent } from "../tournament-players-list-dumb/tournament-players-list-dumb.component";
-import { TournamentRoundsGeneratorService } from '../../services/tournament-game-sessions-generator.service';
-import { MessageService } from 'primeng/api';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatButtonModule} from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
 import { TournamentRoundsListComponent } from '../tournament-rounds-list/tournament-rounds-list.component';
 import { TournamentRound } from '../../models/tournament-round.model';
 import { ComputedStateService } from '../../services/computed-state.service';
@@ -19,15 +17,13 @@ import { TournamentSettings } from '../../models/tournament-settings.model';
 
 @Component({
   selector: 'app-tournament',
-  imports: [TorunamentPlayersListDumbComponent, TournamentRoundsListComponent, BreadcrumbModule, MatButtonToggleModule, FormsModule, ButtonModule, TournamentRankingListComponent, TournamentSettingsDumbComponent],
+  imports: [TorunamentPlayersListDumbComponent, TournamentRoundsListComponent, BreadcrumbModule, MatButtonToggleModule, FormsModule, MatButtonModule, TournamentRankingListComponent, TournamentSettingsDumbComponent],
   templateUrl: './tournament.component.html',
   styleUrl: './tournament.component.scss',
 })
 export class TournamentComponent {
   private route = inject(ActivatedRoute);
-  private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
   public store = inject(AppStore);
-  private messageService = inject(MessageService);
   private computedStateService = inject(ComputedStateService);
   readonly selectedViews = signal<string[]>(['rounds', 'ranking', 'players']);
   isViewSelected(view: string, selectedViews: string[]): boolean {
@@ -119,7 +115,7 @@ export class TournamentComponent {
     this.store.setTournament(tournamentGroupId, tournamentId, {...tournament, settings});
   }
 
-  generateGameSessions() {
+  addQualifierRound() {
     const tournament = this.$tournament();
     const tournamentGroupId = this.$tournamentGroupId();
     const tournamentId = this.$tournamentId();
@@ -127,15 +123,17 @@ export class TournamentComponent {
       return;
     }
 
-    const qualifierRounds = this.tournamentRoundsGeneratorService.generateGameSessions(tournament, this.store.$state()?.playerRelations ?? {});
-    if(qualifierRounds){
-      this.store.setTournament(tournamentGroupId, tournamentId, {
-        ...tournament,
-        qualifierRounds
-      });
-    } else {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Generation of the rounds failed.' });
-    }
+    const nextQualifierId = tournament.qualifierRounds.reduce((max, q)=> Math.max(max, q.id), 0) + 1;
+    const newTournamentRound: TournamentRound = {
+      id: nextQualifierId,
+      title: `Round ${nextQualifierId}`,
+      gameSessions: []
+    };
+
+    this.store.setTournament(tournamentGroupId, tournamentId, {
+      ...tournament,
+      qualifierRounds: [...tournament.qualifierRounds, newTournamentRound]
+    });
 
   }
 }
