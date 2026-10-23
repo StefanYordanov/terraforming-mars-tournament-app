@@ -127,7 +127,7 @@ export class TournamentComponent {
       return;
     }
 
-    const qualifierRounds = this.tournamentRoundsGeneratorService.generateGameSessions(tournament);
+    const qualifierRounds = this.tournamentRoundsGeneratorService.generateGameSessions(tournament, this.store.$state()?.playerRelations ?? {});
     if(qualifierRounds){
       this.store.setTournament(tournamentGroupId, tournamentId, {
         ...tournament,

@@ -7,7 +7,7 @@ import { GameSession } from "../models/game-session.model";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentRoundsGeneratorService {
-  public generateGameSessions(tournament: Tournament): TournamentRound[] | null {
+  public generateGameSessions(tournament: Tournament, playerRelations: Record<number, number[]>): TournamentRound[] | null {
     const tableDistributions = this.generateTableAllocations(tournament.playersIds.length, tournament.settings);
     if(!tableDistributions) {
       return null;
@@ -29,7 +29,7 @@ export class TournamentRoundsGeneratorService {
       const gameSessionsTemplate : number[][] =
         this.splayPlayersAcrossTableTemplate(playerIds, tablesTemplate);
 
-      const optimizedGameSessionsTemplate = this.minimizePlayerCollisions(gameSessionsTemplate, processedRoundTemplates);
+      const optimizedGameSessionsTemplate = this.minimizePlayerCollisions(gameSessionsTemplate, processedRoundTemplates, playerRelations);
 
       processedRoundTemplates.push(optimizedGameSessionsTemplate);
       const gameSessions: GameSession[] = optimizedGameSessionsTemplate.map((playerIds, index) => {
@@ -122,7 +122,7 @@ export class TournamentRoundsGeneratorService {
     return result;
   }
 
-  private minimizePlayerCollisions(tablesTemplate: number[][], processedRoundTemplates: number[][][]): number[][]{
+  private minimizePlayerCollisions(tablesTemplate: number[][], processedRoundTemplates: number[][][], playerRelations: Record<number, number[]>): number[][]{
     if(tablesTemplate.length <2) {
       return tablesTemplate;
     }
@@ -143,10 +143,15 @@ export class TournamentRoundsGeneratorService {
       }
     }
 
+    const playerRelationsMap: {[key: number]: Set<number>} = Object.keys(playerRelations).map(k=> Number(k)).reduce((res, key) =>({
+      ...res,
+      [key]: new Set(playerRelations[key])
+    }), {});
+
     let bestResult = structuredClone(tablesTemplate);
 
     for(let i = 0; i< 1000; i++) {
-      const collisions = this.calculatePlayerCollisions(bestResult, playerInteractionMap);
+      const collisions = this.calculatePlayerCollisions(bestResult, playerInteractionMap, playerRelationsMap);
       if(collisions.length === 0){
         break;
       }
@@ -174,7 +179,7 @@ export class TournamentRoundsGeneratorService {
       testResult[topCollisionRecord.tableIndex][topCollisionRecord.playerIndex] = testResult[randomOtherTableIndex][randomOtherPlayerIndex];
       testResult[randomOtherTableIndex][randomOtherPlayerIndex] = swapPlayerId;
 
-      const testResultCollisions = this.calculatePlayerCollisions(testResult, playerInteractionMap);
+      const testResultCollisions = this.calculatePlayerCollisions(testResult, playerInteractionMap, playerRelationsMap);
       if(testResultCollisions.length > collisions.length){
         continue;
       } else {
@@ -188,7 +193,7 @@ export class TournamentRoundsGeneratorService {
     return bestResult;
   }
 
-  private calculatePlayerCollisions(tablesTemplate: number[][], playerInteractionMap: {[key: number]: Set<number>}): CollisionTemplate[] {
+  private calculatePlayerCollisions(tablesTemplate: number[][], playerInteractionMap: {[key: number]: Set<number>}, playerRelationsMap: {[key: number]: Set<number>}): CollisionTemplate[] {
     const resultCollisions: CollisionTemplate[] = [];
     for(let tableIndex = 0; tableIndex < tablesTemplate.length; tableIndex++) {
       const table= tablesTemplate[tableIndex];
@@ -198,7 +203,12 @@ export class TournamentRoundsGeneratorService {
           const playerId2 = table[player2Index];
           if(playerInteractionMap[playerId1] && playerInteractionMap[playerId1].has(playerId2)){
             resultCollisions.push({
-              tableIndex, player1Index, playerId1, player2Index, playerId2
+              tableIndex, player1Index, playerId1, player2Index, playerId2, collisionType: CollisionType.PreviousMatch
+            });
+          }
+          if(playerRelationsMap[playerId1] && playerRelationsMap[playerId1].has(playerId2)){
+            resultCollisions.push({
+              tableIndex, player1Index, playerId1, player2Index, playerId2, collisionType: CollisionType.Relationship
             });
           }
         }
@@ -208,9 +218,15 @@ export class TournamentRoundsGeneratorService {
   }
 }
 interface CollisionTemplate {
+  collisionType: CollisionType
   tableIndex: number;
   player1Index: number;
   playerId1: number;
   player2Index: number;
   playerId2: number;
+}
+
+enum CollisionType {
+  PreviousMatch = 'PreviousMatch',
+  Relationship = 'Relationship'
 }
