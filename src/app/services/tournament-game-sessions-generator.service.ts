@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { Tournament } from "../models/tournament.model";
 import { TournamentRound } from "../models/tournament-round.model";
 import { TournamentSettings } from "../models/tournament-settings.model";
 import { getRandomInt, getRandomIntegerExceptValue, shuffleArray } from "../utils/array-utils";
@@ -7,8 +6,11 @@ import { GameSession } from "../models/game-session.model";
 
 @Injectable({ providedIn: 'root' })
 export class TournamentRoundsGeneratorService {
-  public generateGameSessions(tournament: Tournament, playerRelations: Record<number, number[]>): TournamentRound[] | null {
-    const tableDistributions = this.generateTableAllocations(tournament.playersIds.length, tournament.settings);
+  public generateRoundGameSessions(playerIds: number[],
+    tournamentSettings: TournamentSettings,
+    playerRelations: Record<number, number[]>,
+    previousRounds: TournamentRound[]): GameSession[] | null {
+    const tableDistributions = this.generateTableAllocations(playerIds.length, tournamentSettings);
     if(!tableDistributions) {
       return null;
     }
@@ -16,47 +18,87 @@ export class TournamentRoundsGeneratorService {
     const tablesTemplate: number[][] = [];
     for(let i = 0; i < tableDistributions.length; i++) {
       const amountOfTimesToAdd = tableDistributions[i];
-      const numberOfPlayersToAdd = tournament.settings.preferedPlayerCountPerTablePriority[i];
+      const numberOfPlayersToAdd = tournamentSettings.preferedPlayerCountPerTablePriority[i];
       for(let j = 0; j < amountOfTimesToAdd; j++) {
         tablesTemplate.push(Array(numberOfPlayersToAdd).fill(0));
       }
     }
 
-    const tournamentRounds: TournamentRound[] = [];
-    const processedRoundTemplates: number[][][] = [];
-    for(let i = 0; i < tournament.settings.qualifierRoundsCount; i++) {
-      const playerIds = shuffleArray(tournament.playersIds);
-      const gameSessionsTemplate : number[][] =
+    playerIds = shuffleArray(playerIds);
+    const previousRoundTemplates: number[][][] = previousRounds.map(
+      pr => pr.gameSessions.map(gs => gs.playerScores.map(ps => ps.playerId)));
+    const gameSessionsTemplate : number[][] =
         this.splayPlayersAcrossTableTemplate(playerIds, tablesTemplate);
-
-      const optimizedGameSessionsTemplate = this.minimizePlayerCollisions(gameSessionsTemplate, processedRoundTemplates, playerRelations);
-
-      processedRoundTemplates.push(optimizedGameSessionsTemplate);
-      const gameSessions: GameSession[] = optimizedGameSessionsTemplate.map((playerIds, index) => {
-        const gameSession : GameSession = {
-          board: tournament.settings.roundBoards[i],
-          generationsPlayed: 0,
-          tableNumber: index + 1,
-          completed: false,
-          playerScores: playerIds.map(playerId => ({
-            playerId: playerId,
-            pointScore: 0,
-            megaCreditScore: 0,
-            corporationCard: '',
-            preludeCards: []
-          }))
-        };
-        return gameSession;
-      });
-
-      tournamentRounds.push({
-        id: i + 1,
-        title: `Round ${i + 1}`,
-        gameSessions: gameSessions
-      });
-    }
-    return tournamentRounds;
+    const optimizedGameSessionsTemplate = this.minimizePlayerCollisions(gameSessionsTemplate, previousRoundTemplates, playerRelations);
+    const gameSessions: GameSession[] = optimizedGameSessionsTemplate.map((playerIds, index) => {
+      const gameSession : GameSession = {
+        board: tournamentSettings.roundBoards[previousRounds.length],
+        generationsPlayed: 0,
+        tableNumber: index + 1,
+        completed: false,
+        playerScores: playerIds.map(playerId => ({
+          playerId: playerId,
+          pointScore: 0,
+          megaCreditScore: 0,
+          corporationCard: '',
+          preludeCards: []
+        }))
+      };
+      return gameSession;
+    });
+    return gameSessions;
   }
+
+  // public generateGameSessions(tournament: Tournament, playerRelations: Record<number, number[]>): TournamentRound[] | null {
+  //   const tableDistributions = this.generateTableAllocations(tournament.playersIds.length, tournament.settings);
+  //   if(!tableDistributions) {
+  //     return null;
+  //   }
+
+  //   const tablesTemplate: number[][] = [];
+  //   for(let i = 0; i < tableDistributions.length; i++) {
+  //     const amountOfTimesToAdd = tableDistributions[i];
+  //     const numberOfPlayersToAdd = tournament.settings.preferedPlayerCountPerTablePriority[i];
+  //     for(let j = 0; j < amountOfTimesToAdd; j++) {
+  //       tablesTemplate.push(Array(numberOfPlayersToAdd).fill(0));
+  //     }
+  //   }
+
+  //   const tournamentRounds: TournamentRound[] = [];
+  //   const processedRoundTemplates: number[][][] = [];
+  //   for(let i = 0; i < tournament.settings.qualifierRoundsCount; i++) {
+  //     const playerIds = shuffleArray(tournament.playersIds);
+  //     const gameSessionsTemplate : number[][] =
+  //       this.splayPlayersAcrossTableTemplate(playerIds, tablesTemplate);
+
+  //     const optimizedGameSessionsTemplate = this.minimizePlayerCollisions(gameSessionsTemplate, processedRoundTemplates, playerRelations);
+
+  //     processedRoundTemplates.push(optimizedGameSessionsTemplate);
+  //     const gameSessions: GameSession[] = optimizedGameSessionsTemplate.map((playerIds, index) => {
+  //       const gameSession : GameSession = {
+  //         board: tournament.settings.roundBoards[i],
+  //         generationsPlayed: 0,
+  //         tableNumber: index + 1,
+  //         completed: false,
+  //         playerScores: playerIds.map(playerId => ({
+  //           playerId: playerId,
+  //           pointScore: 0,
+  //           megaCreditScore: 0,
+  //           corporationCard: '',
+  //           preludeCards: []
+  //         }))
+  //       };
+  //       return gameSession;
+  //     });
+
+  //     tournamentRounds.push({
+  //       id: i + 1,
+  //       title: `Round ${i + 1}`,
+  //       gameSessions: gameSessions
+  //     });
+  //   }
+  //   return tournamentRounds;
+  // }
 
   public generateTableAllocations(totalPlayers: number, settings: TournamentSettings): number[] | null {
     const prefs = settings.preferedPlayerCountPerTablePriority.slice();

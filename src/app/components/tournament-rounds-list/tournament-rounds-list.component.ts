@@ -3,6 +3,7 @@ import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Reacti
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +24,9 @@ import { ComputedTournament, Tournament } from '../../models/tournament.model';
 import { CORPORATIONS } from '../../consts/corporations.const';
 import { PRELUDES } from '../../consts/preludes.const';
 import { TournamentGameSessionComponent } from '../tournament-game-session/tournament-game-session.component';
+import { GenerateSessionsDialogComponent } from '../generate-sessions-dialog/generate-sessions-dialog.component';
+import { TournamentRoundsGeneratorService } from '../../services/tournament-game-sessions-generator.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-tournament-rounds-list',
@@ -60,8 +64,12 @@ export class TournamentRoundsListComponent {
   readonly computedTournament = input.required<ComputedTournament>();
   readonly players = input.required<Record<number, Player>>();
   readonly valuesChanged = output<{ qualifierRounds: TournamentRound[]; finalRound: TournamentRound | null }>();
+  readonly playerRelations = input.required<Record<number, number[]>>();
 
   private fb = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
+  private tournamentRoundsGeneratorService = inject(TournamentRoundsGeneratorService);
+  private messageService = inject(MessageService);
   readonly qualifierRoundsForm = this.fb.array<FormGroup>([]);
   finalRoundForm: FormGroup | null = null;
 
@@ -153,6 +161,37 @@ export class TournamentRoundsListComponent {
         playerScores: [],
       })
     );
+  }
+
+  generateSessions(roundIndex: number) {
+    const playerOptions = this.getPlayerOptions();
+    const allPlayerIds = playerOptions.map((player) => Number(player.value));
+
+    const dialogRef = this.dialog.open(GenerateSessionsDialogComponent, {
+      width: '420px',
+      data: {
+        playerOptions,
+        defaultPlayerIds: allPlayerIds,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((selectedPlayerIds: number[] | undefined) => {
+      const playerIds = selectedPlayerIds ?? [];
+      const gameSessions = this.tournamentRoundsGeneratorService.generateRoundGameSessions(
+        playerIds,
+        this.tournament().settings,
+        this.playerRelations(),
+        this.tournament().qualifierRounds.slice(0, roundIndex));
+      if(gameSessions?.length){
+        const qualifierRounds = this.tournament().qualifierRounds.map((qr, i) => i === roundIndex ? {
+          ...qr, gameSessions
+        }: qr );
+        const finalRound = this.tournament().finalRound;
+        this.valuesChanged.emit({qualifierRounds, finalRound});
+      } else {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Generation of the rounds failed.' });
+      }
+    });
   }
 
   removeGameSession(roundIndex: number, sessionIndex: number) {

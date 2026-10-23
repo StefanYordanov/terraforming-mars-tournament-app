@@ -6,6 +6,10 @@
           @if (roundControl.hasError('duplicatePlayerIds')) {
             <div class="error-message">A player has been selected multiple times in this round.</div>
           }
+          @let computedRound = computedTournament().qualifierRounds[roundIndex];
+          @if(computedRound.unassignedPlayers.length) {
+            <div class="error-message">Unassigned player(s): {{computedRound.unassignedPlayers.map(up => up.name).join(', ')}}</div>
+          }
 
           <div class="round-header">
             <div class="field field-title">
@@ -18,6 +22,10 @@
 
             <button type="button" mat-stroked-button color="primary" (click)="addGameSession(roundIndex)">
               Add Table
+            </button>
+
+            <button type="button" mat-raised-button color="primary" (click)="generateSessions(roundIndex)">
+              Generate Sessions
             </button>
           </div>
 
