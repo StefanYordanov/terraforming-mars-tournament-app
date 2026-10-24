@@ -193,7 +193,6 @@ export class AppStore {
         const lastFetchedState = this.$globalState.lastFetchedState();
         return JSON.stringify(newStateValue) !== JSON.stringify(lastFetchedState) && this.$globalState.initialized();
       }),
-      //tap(() => this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Update started' })),
       switchMap((newStateValue) => this.apiService.saveState$(newStateValue).pipe(
         tapResponse({
           next: (response) => {

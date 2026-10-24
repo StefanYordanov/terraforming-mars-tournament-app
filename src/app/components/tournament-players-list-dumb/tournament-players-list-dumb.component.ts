@@ -22,7 +22,6 @@ export class TorunamentPlayersListDumbComponent {
 
   private fb = inject(FormBuilder);
 
-  // FormArray of FormControl<number | null> where each control is a selected player id
   playerIdsForm: FormArray<FormControl<number | null>> = this.fb.array([], {
     validators: [this.uniquePlayerIdsValidator.bind(this)],
   }) as unknown as FormArray<FormControl<number | null>>;
@@ -71,7 +70,6 @@ export class TorunamentPlayersListDumbComponent {
     return duplicates.length ? { duplicatePlayerIds: true } : null;
   }
 
-  // Helpers for template
   playerOptions = computed(() => {
     return Object.values(this.players() || {}).map(p => ({ label: `${p.name}`, secretLabel: `${p.name}(${p.phoneNumber})`, value: p.id }));
   });
