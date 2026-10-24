@@ -28,7 +28,7 @@
            <div class="column  player-details">
                <div class="players-tab-header">
                    <h3>Players({{ $tournament()!.playersIds.length }})</h3>
-                   <button mat-raised-button type="button" (onClick)="addQualifierRound()">Add Qualifier Round</button>
+                   <button mat-raised-button type="button" (click)="addQualifierRound()">Add Qualifier Round</button>
                </div>
                <app-tournament-players-list-dumb 
                [players]="store.$state()!.players!" 
